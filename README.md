@@ -43,3 +43,13 @@ src/
 - **Motion is minimal and cheap.** Entrances are CSS keyframes (`.rise`, `.fade-in`, `.wipe-in`, `.page-in` in `index.css`), transform and opacity only. Motion (the library) is used only for things the user triggers: drawers, the filter sheet, the Men/Women toggle and curtain, checkout steps and the gift unwrap. There are no scroll listeners, parallax or always-running loops, and everything respects `prefers-reduced-motion`.
 - **Theming** is CSS variables in `src/index.css`, switched by `data-gender` (men or women) and `data-theme` (light or dark) on `<html>`.
 - **Photos** come from Unsplash (`data/photos.ts`). Replace the IDs, or change `img()`, to use your own CDN.
+
+## Running against the Jabali API
+
+The storefront reads products, categories, home content, testimonials and delivery zones from `jabali-be`.
+
+1. Start the backend (`jabali-be`): `npm run db:up`, `npm run migrate:dev`, `npm run seed`, `npm run start:dev` (API on `http://localhost:5000/api/v1`).
+2. Copy `.env.example` to `.env` if the API is elsewhere, and set `VITE_API_URL`.
+3. `npm run dev` (the backend's `CORS_ORIGINS` already allows `http://localhost:5173`).
+
+Edits published in the dashboard appear in open storefront tabs within about a second: the backend streams invalidation events on `GET /store/events` and the storefront refetches the affected queries. Cart, checkout and payments are not wired to the API yet.
