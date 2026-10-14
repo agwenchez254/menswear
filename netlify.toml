@@ -1,15 +1,8 @@
-# Matches JS in root AND subfolders (e.g., /assets/main.js)
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Content-Type = "text/javascript; charset=utf-8"
+[build]
+  command = "npm run build"
+  publish = "dist" # Change to 'build' or 'dist/<your-app-name>' if not using Vite
 
-[[headers]]
-  for = "/*/*.js"
-  [headers.values]
-    Content-Type = "text/javascript; charset=utf-8"
-
-[[headers]]
-  for = "/*/*.mjs"
-  [headers.values]
-    Content-Type = "text/javascript; charset=utf-8"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200npm run preview
