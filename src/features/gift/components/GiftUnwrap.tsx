@@ -73,7 +73,7 @@ export const GiftUnwrap = memo(function GiftUnwrap({ product, wrap, ribbon, mess
                 animate={revealed ? { y: -46, opacity: 1, scale: 1.05, rotate: [0, -3, 2, 0] } : lidOpen ? { y: 0, opacity: 0.001, scale: 0.8 } : { y: 60, opacity: 0, scale: 0.7 }}
                 transition={revealed ? { type: "spring", stiffness: 70, damping: 12, rotate: { duration: 2.2, ease: "easeInOut" } } : { duration: 0.2 }}
               >
-                <span className="block h-full w-full border-[6px] border-[#eceee8] bg-[#eceee8] shadow-[0_16px_28px_rgba(0,0,0,0.5)]"><Photo id={product.images[0]} alt={product.name} w={400} eager className="h-full w-full" /></span>
+                <span className="block h-full w-full border-[6px] border-[#eceee8] bg-[#eceee8] shadow-[0_16px_28px_rgba(0,0,0,0.5)]"><Photo src={product.image} alt={product.name} w={400} eager className="h-full w-full" /></span>
               </motion.div>
             )}
           </AnimatePresence>

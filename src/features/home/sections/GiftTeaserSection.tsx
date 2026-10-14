@@ -1,13 +1,12 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "@phosphor-icons/react";
-import { byId } from "@/data/products";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useGetProductQuery } from "@/api/catalogue";
 import { GiftUnwrap } from "@/features/gift/components/GiftUnwrap";
-import { homeConfig } from "@/features/home/config";
-import type { HomeSectionProps } from "@/features/home/models";
+import type { GiftTeaserSectionProps } from "@/features/home/models";
 
-export function GiftTeaserSection({ g }: HomeSectionProps) {
-  const c = homeConfig[g].gift;
-  const p = byId(c.productId)!;
+export function GiftTeaserSection({ g, c }: GiftTeaserSectionProps) {
+  const { currentData: product } = useGetProductQuery(c.productSlug || skipToken);
   return (
     <section className="mx-auto max-w-[1400px] px-4 py-20 md:px-8 md:py-28">
       <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr]">
@@ -23,7 +22,7 @@ export function GiftTeaserSection({ g }: HomeSectionProps) {
           </div>
         </div>
         <div className="min-h-[520px]">
-          <GiftUnwrap key={g} instant product={p} color={c.color} wrap={c.wrap} ribbon={c.ribbon} message={c.message} from={c.from} to={c.to} runKey={1} />
+          <GiftUnwrap key={g} instant product={product} color={c.colour} wrap={c.wrap} ribbon={c.ribbon} message={c.message} from={c.from} to={c.to} runKey={1} />
         </div>
       </div>
     </section>

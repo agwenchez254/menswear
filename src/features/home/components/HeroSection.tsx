@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ArrowUpRight } from "@phosphor-icons/react";
 import type { CSSProperties } from "react";
 import type { HeroSectionProps } from "@/features/home/models";
-import { byId } from "@/data/products";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useGetProductQuery } from "@/api/catalogue";
 import { formatKES } from "@/lib/format";
 import { productPath, ROUTES } from "@/config/routes";
 import { Photo } from "@/components/ui/Photo";
@@ -15,7 +16,7 @@ const delay = (s: number): CSSProperties => ({ ["--d" as string]: `${s}s` });
  * No scroll listeners, no JavaScript animation, and it switches off under prefers-reduced-motion.
  */
 export function HeroSection({ g, c }: HeroSectionProps) {
-  const featured = byId(c.featured)!;
+  const { currentData: featured } = useGetProductQuery(c.featuredProductSlug || skipToken);
   const women = g === "women";
 
   const text = (
@@ -42,9 +43,9 @@ export function HeroSection({ g, c }: HeroSectionProps) {
     </div>
   );
 
-  const tag = (
+  const tag = featured ? (
     <Link
-      to={productPath(featured.id)}
+      to={productPath(featured.slug)}
       className="group absolute bottom-0 left-0 z-10 flex items-center gap-4 bg-surface px-5 py-4 transition-colors hover:bg-ink hover:text-on-ink [border-radius:0_var(--r-tile)_0_0]"
     >
       <span>
@@ -54,19 +55,19 @@ export function HeroSection({ g, c }: HeroSectionProps) {
       </span>
       <ArrowUpRight size={22} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
     </Link>
-  );
+  ) : null;
 
   const image = women ? (
     <div className="relative min-h-[520px] overflow-hidden bg-accent/30 lg:order-first lg:min-h-0">
       <div className="fade-in absolute inset-x-[9%] bottom-0 top-[7%] overflow-hidden [border-radius:999px_999px_0_0]">
-        <Photo id={c.image} alt={c.alt} w={1200} eager position={c.pos} className="h-full w-full" />
+        <Photo src={c.image} alt={c.alt} w={1200} eager position={c.focalPoint} className="h-full w-full" />
       </div>
       {tag}
     </div>
   ) : (
     <div className="relative min-h-[460px] overflow-hidden bg-accent lg:min-h-0">
       <div className="fade-in absolute inset-0 lg:left-[12%]">
-        <Photo id={c.image} alt={c.alt} w={1400} eager position={c.pos} className="h-full w-full" />
+        <Photo src={c.image} alt={c.alt} w={1400} eager position={c.focalPoint} className="h-full w-full" />
       </div>
       {tag}
     </div>
