@@ -25,3 +25,15 @@ export function srcSetFor(url: string, w: number): string | undefined {
   const small = Math.round(w * 0.6);
   return `${sized(url, small)} ${small}w, ${sized(url, w)} ${w}w, ${sized(url, w * 2)} ${w * 2}w`;
 }
+
+/** Image URLs come from the CMS (free-form JSON). Only https is allowed, plus http on localhost for development. */
+export function safeImageUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.protocol === "https:") return url;
+    if (u.protocol === "http:" && (u.hostname === "localhost" || u.hostname === "127.0.0.1")) return url;
+    return null;
+  } catch {
+    return null;
+  }
+}

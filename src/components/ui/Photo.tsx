@@ -1,13 +1,13 @@
 import { useState } from "react";
 import type { PhotoProps } from "@/models";
-import { sized, srcSetFor } from "@/lib/media";
+import { safeImageUrl, sized, srcSetFor } from "@/lib/media";
 
 /** Photo URL with a neutral placeholder and a fade-in once loaded. A missing or broken URL shows the placeholder. */
 export function Photo({ src, alt, w = 900, className = "", eager, position }: PhotoProps) {
   return (
     <span className={`block overflow-hidden bg-surface-2 ${className}`}>
       {/* Keyed by URL so a replaced photo (live edit) fades in fresh instead of reusing the old load state. */}
-      {src ? <PhotoImage key={src} src={src} alt={alt} w={w} eager={eager} position={position} /> : null}
+      {src && safeImageUrl(src) ? <PhotoImage key={src} src={src} alt={alt} w={w} eager={eager} position={position} /> : null}
     </span>
   );
 }
