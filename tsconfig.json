@@ -8,9 +8,16 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "noEmit": true
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "types": ["vite/client", "node"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src", "vite.config.ts"]
 }

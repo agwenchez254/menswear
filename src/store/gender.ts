@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Gender } from "../data/products";
+import type { Gender, GenderState } from "@/models";
 
 const KEY = "jabali-gender";
 
@@ -21,17 +21,6 @@ const apply = (g: Gender) => {
     /* ignore */
   }
 };
-
-interface GenderState {
-  gender: Gender;
-  /** Target while the transition curtain is covering the page. */
-  pending: Gender | null;
-  /** Swap the theme immediately (used mid-transition and for reduced motion). */
-  commit: (g: Gender) => void;
-  /** Ask for a switch; the curtain component performs it. */
-  request: (g: Gender) => void;
-  clearPending: () => void;
-}
 
 export const useGender = create<GenderState>((set, get) => ({
   gender: read(),

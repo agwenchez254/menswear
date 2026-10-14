@@ -1,168 +1,6 @@
-/**
- * Product photography comes from Unsplash (free licence, no attribution required).
- * Each photo ID below was checked by eye. To use your own pictures, replace the
- * IDs in `photos` or point `images` at your own URLs.
- */
-const photo = {
-  suitNavyDetail: "1507679799987-c73779587ccf",
-  suitPlaid: "1594938298603-c8148c4dae35",
-  suitNavyWalking: "1617137968427-85924c800a22",
-  shirtWhiteMan: "1621072156002-e2fccdc0b176",
-  blazerTealMannequin: "1600091166971-7f9faad6c1e2",
-  suitDarkArmsCrossed: "1519085360753-af0119f7cbe7",
-  bomberSmile: "1492562080023-ab3db95bfbce",
-  shirtsFolded: "1602810318383-e386cc2a3ccf",
-  shirtBlueHanging: "1596755094514-f87e34085b2c",
-  shirtWhiteTie: "1598033129183-c4f50c736f10",
-  shirtBlueTie: "1620012253295-c15cc3e65df4",
-  teeWhiteHanging: "1581655353564-df123a1eb820",
-  teeWhiteMan: "1521572163474-6864f9cf17ab",
-  teeBlackHanging: "1583743814966-8936f5b7be1a",
-  teeBlackMan: "1503341504253-dff4815485f1",
-  shoeLeatherClose: "1614252235316-8c857d38b5f4",
-  shoeLeatherPair: "1449505278894-297fdb3edbc1",
-  shoeMonk: "1533867617858-e7b97e060509",
-  sneakerWhitePuma: "1608231387042-66d1773070a5",
-  sneakerBlack: "1491553895911-0055eca6402d",
-  jacketLeatherFlat: "1551028719-00167b16eac5",
-  bomberRust: "1591047139829-d91aecb6caea",
-  jacketLeatherMan: "1544022613-e87ca75a784a",
-  chinosMan: "1473966968600-fa801b869a1a",
-  jeansBlack: "1542272604-787c3835535d",
-  jeansDark: "1624378439575-d8705ad7ae80",
-  jeansStack: "1604176354204-9268737828e4",
-  watchChrono: "1523170335258-f5ed11844a49",
-  tieWood: "1589756823695-278bc923f962",
-  watchSteel: "1620625515032-6ed0c1790c75",
-  backpackNavy: "1553062407-98eeb64c6a62",
-  flatlay: "1593030761757-71fae45fa0e7",
-  // second batch
-  shirtLightBlueMan: "1531427186611-ecfd6d936c79",
-  jacketDarkMan: "1519764622345-23439dd774f7",
-  blazerNavyGlasses: "1560250097-0b93528c311a",
-  walletBrown: "1627123424574-724758594e93",
-  nairobiSkyline: "1596005554384-d293674c91d7",
-  suitMannequin: "1598808503746-f34c53b9323e",
-  suitBlackWalking: "1618886614638-80e3c103d31a",
-  poloFlatlay: "1586363104862-3a5e2ab60d99",
-  teeGreenMan: "1566753323558-f4e0952af115",
-  jacketTanMan: "1614252369475-531eba835eb1",
-  jacketDarkWatch: "1507680434567-5739c80be1ac",
-  suitGreen: "1593032465175-481ac7f401a0",
-  navyHighCollar: "1531384441138-2736e62e0919",
-  // women
-  wYellowSet: "1515886657613-9f3515b0c78f",
-  wBurgundyCoat: "1483985988355-763728e1935b",
-  wFloralDetail: "1496747611176-843222e1e57c",
-  wStripedPants: "1509631179647-0177331693ae",
-  wCheckCoat: "1485968579580-b6d095142e6e",
-  wBlueCoat: "1539109136881-3be0616acf4b",
-  wBlouseRack: "1490481651871-ab68de25d43d",
-  wDenimDress: "1591369822096-ffd140ec948f",
-  wRedMaxi: "1595777457583-95e059d581b8",
-  wRedFloral: "1572804013309-59a88b7e92f1",
-  wPlumDress: "1566174053879-31528523f8ae",
-  wPinkCoat: "1485462537746-965f33f7f6a7",
-  wKnitRack: "1445205170230-053b83016050",
-  wRedBag: "1584917865442-de89df76afd3",
-  wWickerBag: "1590874103328-eac38a683ce7",
-  wFloralHeel: "1543163521-1bf539c55dd2",
-  wGreenDerby: "1560343090-f0409e92791a",
-  wCreamPump: "1535043934128-cf0b28d52f95",
-  wNavyHeel: "1515347619252-60a4bf4fff4f",
-  wEarrings: "1535632066927-ab7c9ab60908",
-  wNecklace: "1599643478518-a784e5dc4c8f",
-  wPearl: "1611085583191-a3b181a88401",
-  wGreenShirts: "1523381210434-271e8be1f52b",
-  wPoncho: "1434389677669-e08b4cac3105",
-  wJacketRack: "1551488831-00ddcb6c6bd3",
-  wChevronKnit: "1475180098004-ca77a66827be",
-  wDenimJacket: "1517841905240-472988babdf9",
-  wGreyBlazer: "1573496359142-b8d87734a5a2",
-  wKnitRack2: "1512436991641-6745cdb1723f",
-  wPatchedJean: "1541099649105-f69ad21f3246",
-  wSkinnyJean: "1584370848010-d7fe6bc767ec",
-  wGraphicTee: "1582418702059-97ebafb35d09",
-  wBlackTee: "1583744946564-b52ac1c389c8",
-};
-
-export const img = (id: string, w = 900, h?: number) =>
-  `https://images.unsplash.com/photo-${id}?w=${w}${h ? `&h=${h}` : ""}&q=75&auto=format&fit=crop`;
-
-export { photo };
-
-export type Gender = "men" | "women";
-
-export type CategorySlug =
-  | "shirts"
-  | "trousers"
-  | "suits"
-  | "shoes"
-  | "tshirts"
-  | "jackets"
-  | "accessories"
-  | "kaunda"
-  | "dresses"
-  | "tops"
-  | "knitwear";
-
-export interface Swatch {
-  name: string;
-  hex: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  gender: Gender;
-  category: CategorySlug;
-  price: number;
-  compareAt?: number;
-  colors: Swatch[];
-  sizes: string[];
-  /** Photo IDs. The first is the main image. */
-  images: string[];
-  /** Optional photos per colour name. Colours not listed fall back to `images`. */
-  colorImages?: Record<string, string[]>;
-  bestseller?: boolean;
-  isNew?: boolean;
-  rating: number;
-  sold: number;
-  stock: number;
-  blurb: string;
-}
-
-export interface CategoryDef {
-  slug: CategorySlug;
-  label: string;
-  tag: string;
-  image: string;
-}
-
-export const categoriesByGender: Record<Gender, CategoryDef[]> = {
-  men: [
-    { slug: "suits", label: "Suits & Blazers", tag: "Weddings, boardrooms, Sundays", image: photo.suitGreen },
-    { slug: "shirts", label: "Shirts", tag: "Oxford, linen, poplin", image: photo.shirtWhiteTie },
-    { slug: "shoes", label: "Shoes", tag: "Leather and sneakers", image: photo.shoeLeatherClose },
-    { slug: "kaunda", label: "Kaunda", tag: "The classic, reworked", image: photo.jacketDarkWatch },
-    { slug: "trousers", label: "Trousers", tag: "Chinos, wool, denim", image: photo.chinosMan },
-    { slug: "jackets", label: "Jackets", tag: "Bombers and leather", image: photo.bomberRust },
-    { slug: "tshirts", label: "T-Shirts & Polos", tag: "Heavy cotton basics", image: photo.teeWhiteMan },
-    { slug: "accessories", label: "Accessories", tag: "Watches, ties, wallets", image: photo.watchChrono },
-  ],
-  women: [
-    { slug: "dresses", label: "Dresses", tag: "Day, evening and everything between", image: photo.wRedFloral },
-    { slug: "tops", label: "Tops", tag: "Blouses, shirts and tees", image: photo.wBlouseRack },
-    { slug: "knitwear", label: "Knitwear", tag: "Soft layers", image: photo.wChevronKnit },
-    { slug: "jackets", label: "Coats & Jackets", tag: "Wool, denim, tailoring", image: photo.wBlueCoat },
-    { slug: "trousers", label: "Trousers & Jeans", tag: "Wide-leg to skinny", image: photo.wStripedPants },
-    { slug: "shoes", label: "Shoes", tag: "Heels and flats", image: photo.wFloralHeel },
-    { slug: "accessories", label: "Bags & Jewellery", tag: "Finishing touches", image: photo.wRedBag },
-  ],
-};
-
-/** Men's categories, kept under the old name for older imports. */
-export const categories = categoriesByGender.men;
+import type { CategoryDef, Gender, Product, ProductSeed, Swatch } from "@/models";
+import { photo } from "@/data/photos";
+import { categoriesByGender } from "@/data/categories";
 
 const CLOTHING = ["S", "M", "L", "XL", "XXL"];
 const SHOES = ["39", "40", "41", "42", "43", "44", "45", "46"];
@@ -197,9 +35,8 @@ const denim = c("Denim", "#5f7fa6");
 const cobalt = c("Cobalt", "#2a4b8a");
 const gold = c("Gold", "#c9a24b");
 
-type Seed = Omit<Product, "id" | "gender" | "rating" | "sold" | "stock"> & { gender?: Gender; rating?: number; sold?: number; stock?: number };
 
-const seeds: Seed[] = [
+const seeds: ProductSeed[] = [
   // Shirts
   { name: "Oxford Button-Down", category: "shirts", price: 3200, colors: [white, sky, navy], sizes: CLOTHING, images: [photo.shirtWhiteTie, photo.shirtWhiteMan], colorImages: { "White": [photo.shirtWhiteTie, photo.shirtWhiteMan], "Sky": [photo.shirtLightBlueMan, photo.shirtBlueTie] }, bestseller: true, blurb: "Brushed cotton Oxford with a soft collar roll. Works open or tucked." },
   { name: "Linen Camp Shirt", category: "shirts", price: 2800, compareAt: 3400, colors: [sky, sand, white], sizes: CLOTHING, images: [photo.shirtLightBlueMan, photo.shirtBlueHanging], colorImages: { "Sky": [photo.shirtLightBlueMan, photo.shirtBlueHanging] }, isNew: true, blurb: "Breathable linen for Mombasa afternoons and Nairobi weekends." },
@@ -288,11 +125,9 @@ export const products: Product[] = seeds.map((s, i) => ({
   stock: s.stock ?? 3 + ((i * 7) % 18),
 }));
 
-export const byId = (id: string) => products.find((p) => p.id === id);
-export const byCategory = (slugName: string, g?: Gender) =>
+export const byId = (id: string): Product | undefined => products.find((p) => p.id === id);
+export const byCategory = (slugName: string, g?: Gender): CategoryDef | undefined =>
   (g ? categoriesByGender[g] : [...categoriesByGender.men, ...categoriesByGender.women]).find((x) => x.slug === slugName);
 
-export const formatKES = (n: number) => `KES ${n.toLocaleString("en-KE")}`;
-
-export const productsFor = (g: Gender) => products.filter((p) => p.gender === g);
-export const topSellingFor = (g: Gender) => [...productsFor(g)].sort((a, b) => b.sold - a.sold).slice(0, 5);
+export const productsFor = (g: Gender): Product[] => products.filter((p) => p.gender === g);
+export const topSellingFor = (g: Gender): Product[] => [...productsFor(g)].sort((a, b) => b.sold - a.sold).slice(0, 5);

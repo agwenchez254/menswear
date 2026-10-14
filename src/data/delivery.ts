@@ -1,10 +1,4 @@
-export interface Zone {
-  id: "nairobi" | "metro" | "regional" | "far";
-  label: string;
-  fee: number;
-  eta: string;
-  counties: string[];
-}
+import type { Zone } from "@/models";
 
 export const zones: Zone[] = [
   {
@@ -37,14 +31,7 @@ export const zones: Zone[] = [
   },
 ];
 
-export const allCounties = [...new Set(zones.flatMap((z) => z.counties))].sort();
+/** Every county we deliver to, alphabetised for the checkout dropdown. */
+export const allCounties: string[] = [...new Set(zones.flatMap((z) => z.counties))].sort();
 
-export const zoneFor = (county: string) => zones.find((z) => z.counties.includes(county));
-
-export const PICKUP_ADDRESS = "Jabali Studio, 2nd Floor, Kimathi House, Kimathi Street, Nairobi CBD";
-
-export const normalizePhone = (raw: string) => {
-  const d = raw.replace(/[^\d+]/g, "");
-  const m = d.match(/^(?:\+?254|0)?([17]\d{8})$/);
-  return m ? `+254${m[1]}` : null;
-};
+export const zoneFor = (county: string): Zone | undefined => zones.find((z) => z.counties.includes(county));
