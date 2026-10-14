@@ -5,3 +5,4 @@ export type * from "./delivery";
 export type * from "./gender";
 export type * from "./navigation";
 export type * from "./ui";
+export type * from "./home";

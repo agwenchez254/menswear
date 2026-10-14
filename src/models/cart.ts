@@ -8,6 +8,14 @@ export interface GiftInfo {
   to: string;
 }
 
+/** What the bag shows for a line, captured when the item is added. */
+export interface ProductSnapshot {
+  slug: string;
+  name: string;
+  price: number;
+  image: string | null;
+}
+
 export interface CartLine {
   /** Stable identity: product + size + colour + gift message. */
   key: string;
@@ -15,6 +23,7 @@ export interface CartLine {
   size: string;
   color: string;
   qty: number;
+  snapshot: ProductSnapshot;
   gift?: GiftInfo;
 }
 

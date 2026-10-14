@@ -10,3 +10,13 @@ export interface Zone {
 }
 
 export type DeliveryMethod = "delivery" | "pickup";
+
+/** A delivery zone as shown on the home page (from the API). Checkout still uses `Zone`. */
+export interface DeliveryZoneInfo {
+  id: string;
+  label: string;
+  fee: number;
+  eta: string;
+  /** Order value above which delivery is free, if the zone has one. */
+  freeOver: number | null;
+}
