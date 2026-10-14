@@ -4,10 +4,12 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { GenderCurtain } from "@/components/layout/GenderCurtain";
+import { useStoreEvents } from "@/hooks/useStoreEvents";
 
 /** Page chrome shared by every route: header, footer, bag drawer and the gender-switch curtain. */
 export default function Layout() {
   const { pathname } = useLocation();
+  useStoreEvents();
 
   useEffect(() => {
     if (!pathname.startsWith("/product")) window.scrollTo({ top: 0 });
