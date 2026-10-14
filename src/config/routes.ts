@@ -7,6 +7,7 @@ export const ROUTES = {
   gift: "/gift",
   checkout: "/checkout",
   order: "/order/:id",
+  account: "/account",
   notFound: "*",
 } as const;
 

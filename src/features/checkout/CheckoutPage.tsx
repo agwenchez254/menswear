@@ -5,6 +5,7 @@ import { ArrowLeft } from "@phosphor-icons/react";
 import type { DeliveryMethod } from "@/models";
 import type { CardForm, CheckoutPhase, CheckoutStep, ContactForm, FormErrors, PaymentMethod } from "@/features/checkout/models";
 import { useCart } from "@/store/cart";
+import { useAppSelector } from "@/store/hooks";
 import { zoneFor } from "@/data/delivery";
 import { PROMO } from "@/config/commerce";
 import { orderPath, ROUTES } from "@/config/routes";
@@ -26,7 +27,13 @@ export default function CheckoutPage() {
   const { lines, clear, setLastOrder } = useCart();
   const [step, setStep] = useState<CheckoutStep>(1);
   const [method, setMethod] = useState<DeliveryMethod>("delivery");
-  const [form, setForm] = useState<ContactForm>(EMPTY_CONTACT);
+  const account = useAppSelector((s) => s.auth.user);
+  const [form, setForm] = useState<ContactForm>(() => ({
+    ...EMPTY_CONTACT,
+    name: account?.name ?? "",
+    phone: account?.phone ?? "",
+    email: account?.email ?? "",
+  }));
   const [pay, setPay] = useState<PaymentMethod>("mpesa");
   const [payPhone, setPayPhone] = useState("");
   const [card, setCard] = useState<CardForm>({ number: "", exp: "", cvc: "" });

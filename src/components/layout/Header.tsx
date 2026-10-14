@@ -2,9 +2,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
-import { Gift, List, MagnifyingGlass, Moon, ShoppingBag, Sun, X } from "@phosphor-icons/react";
+import { Gift, List, MagnifyingGlass, Moon, ShoppingBag, Sun, User, X } from "@phosphor-icons/react";
 import { useCart } from "@/store/cart";
 import { useGender } from "@/store/gender";
+import { useAppSelector } from "@/store/hooks";
 import { useTheme } from "@/hooks/useTheme";
 import { cartCount } from "@/services/pricing";
 import { mainNav } from "@/config/navigation";
@@ -16,6 +17,7 @@ export function Header() {
   const count = useCart((s) => cartCount(s.lines));
   const setOpen = useCart((s) => s.setOpen);
   const gender = useGender((s) => s.gender);
+  const customer = useAppSelector((s) => s.auth.user);
   const { dark, toggle } = useTheme();
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState(false);
@@ -91,6 +93,9 @@ export function Header() {
           </button>
           <Link to="/gift" className="hidden size-11 place-items-center hover:bg-ink/5 lg:grid" aria-label="Gifts">
             <Gift size={22} />
+          </Link>
+          <Link to="/account" className="grid size-11 place-items-center hover:bg-ink/5" aria-label={customer ? `Your account, ${customer.name}` : "Sign in"}>
+            <User size={22} weight={customer ? "fill" : "regular"} />
           </Link>
           <button className="relative grid size-11 place-items-center hover:bg-ink/5" onClick={() => setOpen(true)} aria-label={`Open bag, ${count} items`}>
             <ShoppingBag size={22} />
