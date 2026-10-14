@@ -42,3 +42,9 @@ Email verification and password reset (the transport now exists, so these become
 - Integration over the real SMTP wire protocol: an in-process SMTP server (`smtp-server`) receives the message and `mailparser` checks From, To, Subject, and both the HTML and text parts.
 - E2E: registering delivers the welcome email to that server; registering still succeeds (201) when the SMTP server is unreachable.
 - Manual: send through the Mailpit container and read the message in its UI.
+
+## Amendments made during implementation (2026-10-14)
+
+- Three messages, not two: a **verification code** email (sent at sign-up and on resend), the **welcome** email (sent when the code is confirmed and the account becomes active, redesigned with a hero band and the four Jabali promises), and the **order confirmation with the receipt in the body**.
+- `MAIL_FROM`, `MAIL_REPLY_TO`, `SMTP_URL` and `STORE_URL` are documented in `jabali-be/docs/email.md`; `.env.example` was deliberately not edited (it had unrelated staged changes).
+- Verified against a real SMTP server: automated tests use an in-process SMTP server (`smtp-server`), and all three emails were also delivered to a Mailpit container and inspected in a browser.

@@ -68,3 +68,12 @@ Customer and staff tokens use the same JWT secret. Customer access tokens carry 
 - Claiming a guest `Customer` by phone without verification: acceptable only because no history is exposed yet. Follow-up: SMS or M-Pesa verification before any order-history endpoint.
 - Refresh token in `localStorage` is readable by injected script; mitigated by the CSP in sub-project 2 and by not persisting the access token.
 - No email verification or password reset until a mail provider exists.
+
+## Amendments made during implementation (2026-10-14)
+
+- **Email OTP activation (user request).** `POST /store/auth/register` now creates a *pending* account, emails a 6-digit code and returns `{ email, expiresInSeconds: 600, resendAfterSeconds: 60 }` with **no tokens**. `POST /store/auth/verify` with `{ email, code, password }` activates the account, sends the welcome email and returns the first tokens. `POST /store/auth/resend` with `{ email }` always answers `200 { resendAfterSeconds: 60 }` (cool-down 60 s and 5 codes an hour are enforced silently, so it cannot be used to probe for accounts). Codes: CSPRNG, stored only as a keyed hash, 10 minute expiry, 5 wrong attempts void the code. Sign-in before activation answers `403 email_not_verified` (only after a correct password).
+- **Pre-hijacking fix (found by automated review).** Activation needs the code **and the sign-up password**; a second sign-up for a still-pending email with a different password answers `409 signup_in_progress`; the same password just re-sends the code; an abandoned sign-up (code expired) frees its email and phone.
+- **Guest records stay separate (found by automated review).** An account is linked to an existing guest `Customer` by phone, but has its own `displayName`; it never reads, shows or edits the guest record. `PATCH /store/me` can only change the display name (the phone can no longer be changed through the profile).
+- **Security fixes unrelated to the above:** oversize request bodies answer 413 instead of 500.
+- **Header account control** is a link to an `/account` page (name, email, phone, Sign out), not a dropdown.
+- **Storefront verify step** (modal, code input, resend timer) is being built in a separate session; it must handle `invalid_code` (+`remainingAttempts`), `code_expired`, `too_many_attempts`, `email_not_verified`, `signup_in_progress`, `email_taken`, `phone_taken`.
