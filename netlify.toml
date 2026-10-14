@@ -1,9 +1,15 @@
+# Matches JS in root AND subfolders (e.g., /assets/main.js)
 [[headers]]
   for = "/*.js"
   [headers.values]
     Content-Type = "text/javascript; charset=utf-8"
 
 [[headers]]
-  for = "/*.mjs"
+  for = "/*/*.js"
+  [headers.values]
+    Content-Type = "text/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/*/*.mjs"
   [headers.values]
     Content-Type = "text/javascript; charset=utf-8"
