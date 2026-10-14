@@ -1,0 +1,25 @@
+2026-10-14 10:12:45.559: [INFO] CurrentProfilePath: C:\Users\Administrator\Desktop\Projects\gift-shoe-app\.shots\p29553\Default
+2026-10-14 10:12:45.559: [INFO] Profiles total count: 1
+2026-10-14 10:12:45.559: [INFO] Profile: name=Profile 1 path=C:\Users\Administrator\Desktop\Projects\gift-shoe-app\.shots\p29553\Default lastActive=2026-10-14T10:12:45.537Z
+2026-10-14 10:12:45.559: [INFO] LastUsedProfileDir: C:\Users\Administrator\Desktop\Projects\gift-shoe-app\.shots\p29553\Default
+2026-10-14 10:12:45.559: [INFO] MostRecentlyActiveProfile: name=Profile 1 path=C:\Users\Administrator\Desktop\Projects\gift-shoe-app\.shots\p29553\Default lastActive=2026-10-14T10:12:45.537Z
+2026-10-14 10:12:45.559: [INFO] OnDoneLoading sync enabled: 0
+2026-10-14 10:12:45.559: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-10-14 10:12:45.559: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-10-14 10:12:45.559: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-10-14 10:12:45.563: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-14 10:12:46.076: [INFO] VisibilityChanged: 0
+2026-10-14 10:12:48.515: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-10-14 10:12:48.520: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:48.523: [INFO] Primary account changed.
+2026-10-14 10:12:48.523: [INFO] OnPrimaryAccountChanged PrimaryAccountChangeEvent::Type::kSet
+2026-10-14 10:12:48.536: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:48.564: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:49.267: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:49.270: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:49.272: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:49.275: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:49.278: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:49.280: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-10-14 10:12:49.283: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 4
+2026-10-14 10:12:51.840: [INFO] Sync initialization duration: 2441ms

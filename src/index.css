@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+/*
+  Jabali design tokens.
+  One accent (citron). One radius rule: everything is square, except colour swatches (circles, functional).
+  Light by default, dark via prefers-color-scheme or the header toggle ([data-theme]).
+*/
+:root {
+  --bg: #eef0ec;
+  --surface: #f8f9f6;
+  --surface-2: #e2e5de;
+  --fg: #111311;
+  --fg-2: #272a27;
+  --muted: #565b55;
+  --line: #c8ccc3;
+  --accent: #c6e24f;
+  --accent-fg: #111311;
+  --success: #17803d;
+  --danger: #b3261e;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d0f0d;
+    --surface: #151815;
+    --surface-2: #1d201d;
+    --fg: #eceee8;
+    --fg-2: #d3d6cf;
+    --muted: #a0a69d;
+    --line: #2b2f2a;
+    --accent: #cfeb58;
+    --accent-fg: #0d0f0d;
+    --success: #4ade80;
+    --danger: #f87171;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d0f0d;
+  --surface: #151815;
+  --surface-2: #1d201d;
+  --fg: #eceee8;
+  --fg-2: #d3d6cf;
+  --muted: #a0a69d;
+  --line: #2b2f2a;
+  --accent: #cfeb58;
+  --accent-fg: #0d0f0d;
+  --success: #4ade80;
+  --danger: #f87171;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-display: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--fg);
+  --color-ink-2: var(--fg-2);
+  --color-on-ink: var(--bg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-fg);
+  --color-mpesa: var(--success);
+  --color-danger: var(--danger);
+
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  button,
+  a,
+  select,
+  summary,
+  [role="button"],
+  [role="radio"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  :focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+}
+
+@utility btn {
+  @apply inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap px-6 text-sm font-semibold tracking-tight transition duration-200 active:translate-y-px active:scale-[0.98] disabled:opacity-50;
+}
+@utility btn-accent {
+  @apply btn bg-accent text-accent-ink hover:bg-ink hover:text-on-ink;
+}
+@utility btn-dark {
+  @apply btn bg-ink text-on-ink hover:bg-accent hover:text-accent-ink;
+}
+@utility btn-ghost {
+  @apply btn border border-ink text-ink hover:bg-ink hover:text-on-ink;
+}
+@utility field {
+  @apply min-h-12 w-full border border-line bg-surface px-4 text-base text-ink placeholder:text-muted/70 transition focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/15;
+}
+@utility field-error {
+  @apply border-danger! focus:ring-danger/20;
+}
+@utility label {
+  @apply text-sm font-semibold text-ink;
+}
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(100deg, var(--surface-2) 30%, var(--surface) 50%, var(--surface-2) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* Price range sliders */
+input[type="range"].range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  width: 100%;
+  background: var(--line);
+}
+input[type="range"].range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 22px;
+  width: 22px;
+  background: var(--fg);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--fg);
+}
+input[type="range"].range::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 0;
+  background: var(--fg);
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--fg);
+}
