@@ -1,54 +1,72 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { skipToken } from "@reduxjs/toolkit/query";
 import { CaretRight, Check, Gift, Package, Ruler, Star, Truck } from "@phosphor-icons/react";
-import { byCategory, byId, productsFor } from "@/data/products";
+import { isNotFound } from "@/api/baseApi";
+import { useGetProductQuery, useGetProductsQuery } from "@/api/catalogue";
 import { useCart } from "@/store/cart";
 import { ProductGallery } from "@/features/product/components/ProductGallery";
 import { SizeGuide } from "@/features/product/components/SizeGuide";
 import { LOW_STOCK_AT } from "@/features/product/constants";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { formatKES } from "@/lib/format";
+import { snapshotOf } from "@/lib/snapshot";
 
 export default function ProductPage() {
-  const { id = "" } = useParams();
-  const product = byId(id);
+  const { slug = "" } = useParams();
+  // currentData so moving between products shows the skeleton instead of the previous product.
+  const { currentData: product, isError, error, refetch } = useGetProductQuery(slug);
+  const { currentData: pool } = useGetProductsQuery(product?.gender ?? skipToken);
   const add = useCart((s) => s.add);
-  const [color, setColor] = useState(product?.colors[0].name ?? "");
+  const [color, setColor] = useState("");
   const [size, setSize] = useState("");
-  const [error, setError] = useState(false);
+  const [needSize, setNeedSize] = useState(false);
   const [guide, setGuide] = useState(false);
   const [added, setAdded] = useState(false);
 
+  // Reset the selection only when a different product loads. A live refetch of the same product
+  // (the editor changed a price) must not throw away the visitor's colour and size.
   useEffect(() => {
-    setColor(product?.colors[0].name ?? "");
+    setColor(product?.colors[0]?.name ?? "");
     setSize(product?.sizes.length === 1 ? product.sizes[0] : "");
-    setError(false);
+    setNeedSize(false);
     window.scrollTo({ top: 0 });
-  }, [id, product]);
+  }, [product?.id]);
 
   if (!product) {
+    if (isError && !isNotFound(error)) return <ErrorState title="We could not load this product" onRetry={() => void refetch()} />;
+    if (isError) {
+      return (
+        <div className="mx-auto max-w-xl px-4 py-32 text-center">
+          <h1 className="display text-5xl">We could not find that product</h1>
+          <p className="mt-3 text-muted">It may have sold out or moved.</p>
+          <Link to="/shop" className="btn-dark mt-8">
+            Back to the shop
+          </Link>
+        </div>
+      );
+    }
     return (
-      <div className="mx-auto max-w-xl px-4 py-32 text-center">
-        <h1 className="display text-5xl">We could not find that product</h1>
-        <p className="mt-3 text-muted">It may have sold out or moved.</p>
-        <Link to="/shop" className="btn-dark mt-8">
-          Back to the shop
-        </Link>
+      <div className="mx-auto max-w-[1400px] px-4 pb-10 pt-6 md:px-8" aria-busy="true">
+        <div className="skeleton mt-6 aspect-[5/4] w-full lg:w-[55%]" />
       </div>
     );
   }
 
-  const cat = byCategory(product.category, product.gender);
-  const related = productsFor(product.gender).filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
-  const low = product.stock <= LOW_STOCK_AT;
-  const imgs = product.colorImages?.[color] ?? product.images;
+  const related = (pool ?? []).filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const forColour = product.variants.filter((v) => v.colourName === null || v.colourName === color);
+  const colourStock = forColour.reduce((n, v) => n + v.available, 0);
+  const sizeSoldOut = (s: string) => forColour.filter((v) => v.size === s).every((v) => !v.inStock);
+  const low = colourStock > 0 && colourStock <= LOW_STOCK_AT;
+  const imgs = product.colorImages[color]?.length ? product.colorImages[color] : product.images;
 
   const addToBag = () => {
     if (!size) {
-      setError(true);
+      setNeedSize(true);
       return;
     }
-    add({ productId: product.id, size, color });
+    add({ productId: product.id, size, color, snapshot: snapshotOf(product, imgs[0]) });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -58,7 +76,7 @@ export default function ProductPage() {
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-muted">
         <Link to="/" className="hover:text-ink">Home</Link>
         <CaretRight size={12} />
-        <Link to={`/shop?cat=${product.category}`} className="hover:text-ink">{cat?.label}</Link>
+        <Link to={`/shop?cat=${product.category}`} className="hover:text-ink">{product.categoryLabel}</Link>
         <CaretRight size={12} />
         <span className="text-ink">{product.name}</span>
       </nav>
@@ -75,7 +93,7 @@ export default function ProductPage() {
             <span className="text-3xl font-semibold tabular-nums">{formatKES(product.price)}</span>
             {product.compareAt && <span className="text-lg text-muted line-through tabular-nums">{formatKES(product.compareAt)}</span>}
           </p>
-          <p className="mt-5 max-w-[56ch] leading-relaxed text-muted">{product.blurb}</p>
+          {product.blurb && <p className="mt-5 max-w-[56ch] leading-relaxed text-muted">{product.blurb}</p>}
 
           <fieldset className="mt-8">
             <legend className="label">
@@ -96,13 +114,16 @@ export default function ProductPage() {
               </button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              {product.sizes.map((s) => (
-                <button key={s} aria-pressed={size === s} onClick={() => { setSize(s); setError(false); }} className={`min-h-11 min-w-12 rounded-xl border px-4 text-sm transition ${size === s ? "border-ink bg-ink text-on-ink" : "border-line bg-surface hover:border-ink"}`}>
-                  {s}
-                </button>
-              ))}
+              {product.sizes.map((s) => {
+                const out = sizeSoldOut(s);
+                return (
+                  <button key={s} disabled={out} aria-pressed={size === s} onClick={() => { setSize(s); setNeedSize(false); }} className={`min-h-11 min-w-12 rounded-xl border px-4 text-sm transition disabled:cursor-not-allowed disabled:text-muted disabled:line-through disabled:opacity-50 ${size === s ? "border-ink bg-ink text-on-ink" : "border-line bg-surface hover:border-ink"}`}>
+                    {s}
+                  </button>
+                );
+              })}
             </div>
-            {error && (
+            {needSize && (
               <p role="alert" className="mt-2 text-sm text-danger">
                 Please choose a size first.
               </p>
@@ -110,13 +131,14 @@ export default function ProductPage() {
             {guide && <SizeGuide gender={product.gender} />}
           </fieldset>
 
-          {low && <p className="mt-5 text-sm font-medium text-danger">Only {product.stock} left in stock</p>}
+          {low && <p className="mt-5 text-sm font-medium text-danger">Only {colourStock} left in stock</p>}
+          {!product.inStock && <p className="mt-5 text-sm font-medium text-danger">Sold out</p>}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <button className="btn-accent h-14 flex-1 text-base" onClick={addToBag}>
+            <button className="btn-accent h-14 flex-1 text-base disabled:opacity-50" disabled={!product.inStock} onClick={addToBag}>
               {added ? (<><Check size={20} weight="bold" /> Added to bag</>) : "Add to bag"}
             </button>
-            <Link to={`/gift?product=${product.id}`} className="btn-ghost h-14 text-base">
+            <Link to={`/gift?product=${product.slug}`} className="btn-ghost h-14 text-base">
               <Gift size={20} /> Send as a gift
             </Link>
           </div>

@@ -1,36 +1,40 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Funnel, X } from "@phosphor-icons/react";
+import type { CategoryDef, Product } from "@/models";
 import type { FilterChip } from "@/features/shop/models";
-import { productsFor } from "@/data/products";
-import { categoriesByGender } from "@/data/categories";
+import { useGetCategoriesQuery, useGetProductsQuery } from "@/api/catalogue";
 import { useGender } from "@/store/gender";
 import { formatKES } from "@/lib/format";
 import { ProductCard, ProductCardSkeleton } from "@/components/product/ProductCard";
-import { PRICE_MAX, SKELETON_MS, SORT_OPTIONS } from "@/features/shop/constants";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { PRICE_MAX, SORT_OPTIONS } from "@/features/shop/constants";
 import { availableSizes, availableSwatches, filterProducts } from "@/features/shop/lib/filters";
 import { useShopFilters } from "@/features/shop/hooks/useShopFilters";
 import { FilterPanel } from "@/features/shop/components/FilterPanel";
 import { FilterSheet } from "@/features/shop/components/FilterSheet";
 import { EmptyResults } from "@/features/shop/components/EmptyResults";
 
+const NO_PRODUCTS: Product[] = [];
+const NO_CATEGORIES: CategoryDef[] = [];
+
 export default function ShopPage() {
   const gender = useGender((s) => s.gender);
   const { filters, update, setList, reset } = useShopFilters();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  const pool = useMemo(() => productsFor(gender), [gender]);
-  const categories = categoriesByGender[gender];
+  // currentData (not data) so switching men/women never shows the other side's products.
+  const productsQuery = useGetProductsQuery(gender);
+  const categoriesQuery = useGetCategoriesQuery(gender);
+  const pool = productsQuery.currentData ?? NO_PRODUCTS;
+  const categories = categoriesQuery.currentData ?? NO_CATEGORIES;
+  const loading = productsQuery.currentData === undefined && !productsQuery.isError;
+  const failed = productsQuery.currentData === undefined && productsQuery.isError;
+
   const sizes = useMemo(() => availableSizes(pool), [pool]);
   const swatches = useMemo(() => availableSwatches(pool), [pool]);
 
   const deferredQuery = useDeferredValue(filters.q);
   const results = useMemo(() => filterProducts(pool, filters, deferredQuery), [pool, filters, deferredQuery]);
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), SKELETON_MS);
-    return () => clearTimeout(t);
-  }, []);
 
   // Lock page scroll while the mobile sheet is open.
   useEffect(() => {
@@ -96,7 +100,9 @@ export default function ShopPage() {
             )}
           </div>
 
-          {loading ? (
+          {failed ? (
+            <ErrorState title="We could not load the shop" onRetry={() => void productsQuery.refetch()} />
+          ) : loading ? (
             <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-10 md:gap-x-5 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />

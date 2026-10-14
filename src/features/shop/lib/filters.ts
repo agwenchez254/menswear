@@ -51,7 +51,7 @@ export const filterProducts = (pool: Product[], f: ShopFilters, term: string): P
       if (f.colors.length && !p.colors.some((c) => f.colors.includes(c.name))) return false;
       if (f.sale && !p.compareAt) return false;
       if (f.fresh && !p.isNew) return false;
-      if (needle && !`${p.name} ${p.category} ${p.blurb}`.toLowerCase().includes(needle)) return false;
+      if (needle && !`${p.name} ${p.categoryLabel}`.toLowerCase().includes(needle)) return false;
       return true;
     })
     .sort(compare(f.sort));

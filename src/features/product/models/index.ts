@@ -1,4 +1,4 @@
-import type { Gender, Product } from "@/models";
+import type { Gender, ProductDetail } from "@/models";
 
 export interface SizeChartRow {
   size: string;
@@ -19,9 +19,9 @@ export interface SizeGuideProps {
 }
 
 export interface ProductGalleryProps {
-  product: Product;
+  product: ProductDetail;
   /** Selected colour name, used in alt text. */
   color: string;
-  /** Photo IDs to show for the selected colour. The first is the large hero image. */
+  /** Photo URLs to show for the selected colour. The first is the large hero image. */
   images: string[];
 }
