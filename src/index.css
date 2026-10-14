@@ -1,10 +1,16 @@
 @import "tailwindcss";
 
 /*
-  Jabali design tokens.
-  One accent (citron). One radius rule: everything is square, except colour swatches (circles, functional).
-  Light by default, dark via prefers-color-scheme or the header toggle ([data-theme]).
+  Jabali design tokens, two themes.
+
+  Men:   cool off-black and bone, one citron accent, square corners, heavy Bricolage Grotesque.
+  Women: soft plum-ink and mist, one apricot accent, rounded shapes and pill buttons, light Outfit.
+
+  Each theme has a light and a dark mode. Light is the default. Dark follows prefers-color-scheme
+  or the header toggle ([data-theme]). The gender is set on <html data-gender> before first paint.
 */
+
+/* ---------- Men ---------- */
 :root {
   --bg: #eef0ec;
   --surface: #f8f9f6;
@@ -17,6 +23,16 @@
   --accent-fg: #111311;
   --success: #17803d;
   --danger: #b3261e;
+
+  --fd: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --dw: 700;
+  --dls: -0.035em;
+  --dlh: 0.95;
+
+  --r-soft: 0px;
+  --r-tile: 0px;
+  --r-btn: 0px;
+  --r-field: 0px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -50,8 +66,61 @@
   color-scheme: dark;
 }
 
+/* ---------- Women ---------- */
+:root[data-gender="women"] {
+  --bg: #f3eff1;
+  --surface: #fbf9fa;
+  --surface-2: #e8e1e5;
+  --fg: #231a22;
+  --fg-2: #3a2f39;
+  --muted: #655a63;
+  --line: #d9cfd4;
+  --accent: #f29a76;
+  --accent-fg: #231a22;
+  --success: #17803d;
+  --danger: #b3261e;
+
+  --fd: "Outfit Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --dw: 500;
+  --dls: -0.03em;
+  --dlh: 1;
+
+  --r-soft: 14px;
+  --r-tile: 26px;
+  --r-btn: 999px;
+  --r-field: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-gender="women"]:not([data-theme="light"]) {
+    --bg: #171116;
+    --surface: #201a1f;
+    --surface-2: #2a232a;
+    --fg: #f3edf0;
+    --fg-2: #ddd2d8;
+    --muted: #b3a6ae;
+    --line: #3a3138;
+    --accent: #f5a07d;
+    --accent-fg: #171116;
+    --success: #4ade80;
+    --danger: #f87171;
+  }
+}
+:root[data-gender="women"][data-theme="dark"] {
+  --bg: #171116;
+  --surface: #201a1f;
+  --surface-2: #2a232a;
+  --fg: #f3edf0;
+  --fg-2: #ddd2d8;
+  --muted: #b3a6ae;
+  --line: #3a3138;
+  --accent: #f5a07d;
+  --accent-fg: #171116;
+  --success: #4ade80;
+  --danger: #f87171;
+}
+
 @theme inline {
-  --font-display: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--fd);
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
 
   --color-paper: var(--bg);
@@ -67,14 +136,14 @@
   --color-mpesa: var(--success);
   --color-danger: var(--danger);
 
-  --radius-xs: 0;
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius-2xl: 0;
-  --radius-3xl: 0;
-  --radius-4xl: 0;
+  --radius-xs: var(--r-soft);
+  --radius-sm: var(--r-soft);
+  --radius-md: var(--r-soft);
+  --radius-lg: var(--r-soft);
+  --radius-xl: var(--r-soft);
+  --radius-2xl: var(--r-soft);
+  --radius-3xl: var(--r-soft);
+  --radius-4xl: var(--r-soft);
 }
 
 @layer base {
@@ -120,6 +189,7 @@
 
 @utility btn {
   @apply inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap px-6 text-sm font-semibold tracking-tight transition duration-200 active:translate-y-px active:scale-[0.98] disabled:opacity-50;
+  border-radius: var(--r-btn);
 }
 @utility btn-accent {
   @apply btn bg-accent text-accent-ink hover:bg-ink hover:text-on-ink;
@@ -132,6 +202,7 @@
 }
 @utility field {
   @apply min-h-12 w-full border border-line bg-surface px-4 text-base text-ink placeholder:text-muted/70 transition focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/15;
+  border-radius: var(--r-field);
 }
 @utility field-error {
   @apply border-danger! focus:ring-danger/20;
@@ -140,10 +211,20 @@
   @apply text-sm font-semibold text-ink;
 }
 @utility display {
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 0.95;
+  font-family: var(--fd);
+  font-weight: var(--dw);
+  letter-spacing: var(--dls);
+  line-height: var(--dlh);
+}
+/** Rounded container: square for men, soft for women. Clips its children. */
+@utility tile {
+  border-radius: var(--r-tile);
+  overflow: hidden;
+}
+
+/* Women: option buttons, selects and text areas soften too (swatches stay circular). */
+:root[data-gender="women"] :is(button[aria-pressed], button[role="radio"], select, textarea):not(.rounded-full) {
+  border-radius: var(--r-field);
 }
 
 /* Skeleton shimmer */
@@ -182,11 +263,12 @@ input[type="range"].range::-webkit-slider-thumb {
   background: var(--fg);
   border: 3px solid var(--bg);
   box-shadow: 0 0 0 1px var(--fg);
+  border-radius: var(--r-soft);
 }
 input[type="range"].range::-moz-range-thumb {
   height: 18px;
   width: 18px;
-  border-radius: 0;
+  border-radius: var(--r-soft);
   background: var(--fg);
   border: 3px solid var(--bg);
   box-shadow: 0 0 0 1px var(--fg);

@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Check, Gift as GiftIcon } from "@phosphor-icons/react";
-import { byId, formatKES, products } from "../data/products";
+import { byId, formatKES, productsFor } from "../data/products";
+import { useGender } from "../store/gender";
 import { GiftUnwrap, ribbons, wraps } from "../components/GiftUnwrap";
 import { Photo } from "../components/Photo";
 import { GIFT_FEE, useCart } from "../store/cart";
@@ -12,7 +13,9 @@ export default function Gift() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const add = useCart((s) => s.add);
-  const initial = byId(params.get("product") ?? "") ?? products.find((p) => p.id === "oxford-button-down")!;
+  const gender = useGender((st) => st.gender);
+  const defaultId = gender === "men" ? "oxford-button-down" : "denim-shirt-dress";
+  const initial = byId(params.get("product") ?? "") ?? byId(defaultId)!;
   const [productId, setProductId] = useState(initial.id);
   const [color, setColor] = useState(initial.colors[0].name);
   const [size, setSize] = useState(initial.sizes[Math.min(2, initial.sizes.length - 1)]);
@@ -25,7 +28,7 @@ export default function Gift() {
   const [error, setError] = useState("");
 
   const product = byId(productId)!;
-  const gifts = useMemo(() => products.filter((p) => p.category !== "accessories" || p.price >= 1800), []);
+  const gifts = useMemo(() => productsFor(gender).filter((p) => p.category !== "accessories" || p.price >= 1800), [gender]);
 
   const pick = (id: string) => {
     const p = byId(id)!;
@@ -34,6 +37,12 @@ export default function Gift() {
     setSize(p.sizes[Math.min(2, p.sizes.length - 1)]);
     setRunKey((k) => k + 1);
   };
+
+  // When the shop switches between men and women, move to a gift from that side.
+  useEffect(() => {
+    if (byId(productId)?.gender !== gender) pick(defaultId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gender]);
 
   const addGift = () => {
     if (!to.trim() || !from.trim()) {
@@ -46,20 +55,19 @@ export default function Gift() {
   };
 
   return (
-    <div className="mx-auto flex max-w-[1500px] flex-col px-4 pb-10 pt-10 md:px-8 md:pt-14 lg:h-full lg:pb-4 lg:pt-4">
-      <p className="">The gifting studio</p>
-      <h1 className="mt-2 display text-5xl md:text-7xl lg:mt-0 lg:text-4xl">Build a gift worth opening.</h1>
-      <p className="mt-5 max-w-[56ch] text-muted lg:hidden">Choose the piece, the wrapping and the words. Watch it unwrap on the right, exactly as they will see it.</p>
+    <div className="mx-auto max-w-[1400px] px-4 pb-10 pt-10 md:px-8 md:pt-14">
+      <h1 className="mt-2 display text-5xl md:text-7xl">Build a gift worth opening.</h1>
+      <p className="mt-5 max-w-[56ch] text-muted">Choose the piece, the wrapping and the words. Watch it unwrap on the right, exactly as they will see it.</p>
 
-      <div className="mt-12 grid gap-10 lg:mt-3 lg:min-h-0 lg:flex-1 lg:grid-cols-[1fr_minmax(340px,420px)] lg:gap-6">
-        <div className="space-y-12 lg:min-h-0 lg:space-y-4 lg:overflow-hidden">
+      <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_minmax(420px,520px)]">
+        <div className="space-y-12">
           <section aria-labelledby="g1">
-            <h2 id="g1" className="display text-3xl lg:text-xl">
+            <h2 id="g1" className="display text-3xl">
               <span className="mr-3 text-ink">1</span>Pick the gift
             </h2>
-            <div className="-mx-4 mt-5 lg:mt-2 flex snap-x gap-3 overflow-x-auto overflow-y-hidden px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-3 md:mx-0 md:px-0">
+            <div className="-mx-4 mt-5 flex snap-x gap-3 overflow-x-auto overflow-y-hidden px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-3 md:mx-0 md:px-0">
               {gifts.slice(0, 14).map((p) => (
-                <button key={p.id} onClick={() => pick(p.id)} aria-pressed={p.id === productId} className={`relative w-32 shrink-0 lg:w-24 snap-start overflow-hidden rounded-2xl border-2 text-left transition ${p.id === productId ? "border-ink" : "border-transparent"}`}>
+                <button key={p.id} onClick={() => pick(p.id)} aria-pressed={p.id === productId} className={`relative w-32 shrink-0 snap-start overflow-hidden rounded-2xl border-2 text-left transition ${p.id === productId ? "border-ink" : "border-transparent"}`}>
                   <div className="aspect-square">
                     <Photo id={p.images[0]} alt={p.name} w={300} className="h-full w-full" />
                   </div>
@@ -71,7 +79,7 @@ export default function Gift() {
                 </button>
               ))}
             </div>
-            <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:mt-2 lg:gap-3">
+            <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <fieldset>
                 <legend className="label">Colour</legend>
                 <div className="mt-2 flex gap-3">
@@ -94,10 +102,10 @@ export default function Gift() {
           </section>
 
           <section aria-labelledby="g2">
-            <h2 id="g2" className="display text-3xl lg:text-xl">
+            <h2 id="g2" className="display text-3xl">
               <span className="mr-3 text-ink">2</span>Choose the wrapping
             </h2>
-            <div className="mt-5 grid gap-6 sm:grid-cols-2 lg:mt-2 lg:gap-3">
+            <div className="mt-5 grid gap-6 sm:grid-cols-2">
               <fieldset>
                 <legend className="label">Box</legend>
                 <div className="mt-2 flex gap-3">
@@ -118,10 +126,10 @@ export default function Gift() {
           </section>
 
           <section aria-labelledby="g3">
-            <h2 id="g3" className="display text-3xl lg:text-xl">
+            <h2 id="g3" className="display text-3xl">
               <span className="mr-3 text-ink">3</span>Write the card
             </h2>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:mt-2 lg:gap-3">
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <label htmlFor="to" className="label">To</label>
                 <input id="to" className="field" value={to} onChange={(e) => setTo(e.target.value)} placeholder="Recipient's name" />
@@ -132,27 +140,27 @@ export default function Gift() {
               </div>
               <div className="flex flex-col gap-2 sm:col-span-2">
                 <label htmlFor="msg" className="label">Message</label>
-                <textarea id="msg" rows={2} maxLength={MAX_MSG} className="field py-3" value={message} onChange={(e) => setMessage(e.target.value)} />
+                <textarea id="msg" rows={3} maxLength={MAX_MSG} className="field py-3" value={message} onChange={(e) => setMessage(e.target.value)} />
                 <p className="text-right text-xs text-muted tabular-nums">{message.length}/{MAX_MSG}</p>
               </div>
             </div>
-            <p className="mt-2 text-sm text-muted lg:hidden">We hide prices on the packing slip. You can enter the recipient's address at checkout, or choose pickup.</p>
+            <p className="mt-2 text-sm text-muted">We hide prices on the packing slip. You can enter the recipient's address at checkout, or choose pickup.</p>
           </section>
         </div>
 
-        <aside className="lg:min-h-0 lg:overflow-hidden">
+        <aside className="lg:sticky lg:top-32 lg:self-start">
           <GiftUnwrap product={product} color={color} wrap={wrap} ribbon={ribbon} message={message} from={from} to={to} runKey={runKey} />
-          <div className="mt-4 rounded-3xl bg-surface p-6 lg:mt-3 lg:p-4 ring-1 ring-ink/15">
+          <div className="mt-4 rounded-3xl bg-surface p-6 ring-1 ring-ink/15">
             <dl className="space-y-2 text-sm tabular-nums">
               <div className="flex justify-between"><dt className="text-muted">{product.name}</dt><dd>{formatKES(product.price)}</dd></div>
               <div className="flex justify-between"><dt className="text-muted">Gift wrap and card</dt><dd>{formatKES(GIFT_FEE)}</dd></div>
               <div className="flex justify-between border-t border-line pt-3 text-lg font-semibold"><dt>Total</dt><dd>{formatKES(product.price + GIFT_FEE)}</dd></div>
             </dl>
             {error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
-            <button className="btn-accent mt-4 h-14 lg:mt-3 lg:h-12 w-full text-base" onClick={addGift}>
+            <button className="btn-accent mt-4 h-14 w-full text-base" onClick={addGift}>
               <GiftIcon size={20} /> Add gift to bag
             </button>
-            <p className="mt-3 text-center text-xs text-muted lg:hidden">Wrapping is billed at checkout. <Link to="/shop" className="underline">Keep browsing</Link></p>
+            <p className="mt-3 text-center text-xs text-muted">Wrapping is billed at checkout. <Link to="/shop" className="underline">Keep browsing</Link></p>
           </div>
         </aside>
       </div>

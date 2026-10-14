@@ -1,8 +1,11 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Link, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { motion, useReducedMotion } from "motion/react";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { CartDrawer } from "./components/CartDrawer";
+import { GenderCurtain } from "./components/GenderCurtain";
+import { ScrollProgress } from "./components/motion";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Product from "./pages/Product";
@@ -16,30 +19,36 @@ function Layout() {
   useEffect(() => {
     if (!pathname.startsWith("/product")) window.scrollTo({ top: 0 });
   }, [pathname]);
-  const fitScreen = pathname === "/gift";
+  const reduce = useReducedMotion();
   return (
-    <div className={fitScreen ? "flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden" : undefined}>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-white focus:px-4 focus:py-2">
+    <>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-surface focus:px-4 focus:py-2">
         Skip to content
       </a>
+      <ScrollProgress />
       <Header />
-      <main id="main" className={fitScreen ? "lg:min-h-0 lg:flex-1" : undefined}>
+      <motion.main
+        key={pathname}
+        id="main"
+        initial={reduce ? false : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      >
         <Suspense fallback={<div className="min-h-[60dvh]" aria-busy="true" />}>
           <Outlet />
         </Suspense>
-      </main>
-      <div className={fitScreen ? "lg:hidden" : undefined}>
-        <Footer />
-      </div>
+      </motion.main>
+      <Footer />
       <CartDrawer />
-    </div>
+      <GenderCurtain />
+    </>
   );
 }
 
 function NotFound() {
   return (
     <div className="mx-auto max-w-xl px-4 py-32 text-center">
-      <h1 className="font-display text-6xl font-semibold">Lost the thread</h1>
+      <h1 className="display text-6xl">Lost the thread</h1>
       <p className="mt-3 text-muted">That page does not exist.</p>
       <Link to="/" className="btn-dark mt-8">
         Go home

@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
+import { useGender } from "../store/gender";
 import { Envelope, InstagramLogo, MapPin, Phone, WhatsappLogo } from "@phosphor-icons/react";
 
 export function Footer() {
+  const gender = useGender((st) => st.gender);
   return (
     <footer className="mt-28 border-t border-ink/15 bg-surface">
       <div className="mx-auto grid max-w-[1400px] gap-12 px-4 pb-10 pt-16 md:grid-cols-[1.5fr_1fr_1fr_1.3fr] md:px-8">
@@ -14,10 +16,12 @@ export function Footer() {
         <nav aria-label="Shop" className="text-sm">
           <h3 className="font-semibold">Shop</h3>
           <ul className="mt-4 space-y-3 text-muted">
-            <li><Link className="hover:text-ink" to="/shop?cat=suits">Suits and blazers</Link></li>
-            <li><Link className="hover:text-ink" to="/shop?cat=shirts">Shirts</Link></li>
-            <li><Link className="hover:text-ink" to="/shop?cat=shoes">Shoes</Link></li>
-            <li><Link className="hover:text-ink" to="/shop?cat=kaunda">Kaunda</Link></li>
+            {(gender === "men"
+              ? [["suits", "Suits and blazers"], ["shirts", "Shirts"], ["shoes", "Shoes"], ["kaunda", "Kaunda"]]
+              : [["dresses", "Dresses"], ["tops", "Tops"], ["jackets", "Coats and jackets"], ["shoes", "Shoes"]]
+            ).map(([slug, label]) => (
+              <li key={slug}><Link className="hover:text-ink" to={`/shop?cat=${slug}`}>{label}</Link></li>
+            ))}
             <li><Link className="hover:text-ink" to="/gift">Send a gift</Link></li>
           </ul>
         </nav>
@@ -42,7 +46,7 @@ export function Footer() {
         <p className="display select-none whitespace-nowrap px-4 text-center text-[clamp(5rem,23vw,21rem)] uppercase text-ink/[0.07]">Jabali</p>
       </div>
       <div className="border-t border-line py-5 text-center text-xs text-muted">
-        &copy; {new Date().getFullYear()} Jabali Menswear. Prices in Kenya Shillings and include VAT. Photography from Unsplash.
+        &copy; {new Date().getFullYear()} Jabali. Prices in Kenya Shillings and include VAT. Photography from Unsplash.
       </div>
     </footer>
   );

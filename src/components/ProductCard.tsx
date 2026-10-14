@@ -18,7 +18,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       className="group relative"
     >
       <Link to={`/product/${product.id}`} aria-label={`${product.name}, ${formatKES(product.price)}`} className="block">
-        <div className="relative aspect-[4/5] overflow-hidden bg-surface-2">
+        <div className="tile relative aspect-[4/5] bg-surface-2">
           <Photo id={product.images[0]} alt={product.name} w={640} className="absolute inset-0 transition duration-700 ease-out group-hover:scale-105" />
           {second && (
             <Photo id={second} alt="" w={640} className="absolute inset-0 opacity-0 transition duration-500 group-hover:scale-105 group-hover:opacity-100 max-md:hidden" />
@@ -68,7 +68,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 export function ProductCardSkeleton() {
   return (
     <div aria-hidden>
-      <div className="skeleton aspect-[4/5]" />
+      <div className="skeleton tile aspect-[4/5]" />
       <div className="skeleton mt-3 h-4 w-3/4" />
       <div className="skeleton mt-2 h-3 w-1/3" />
     </div>

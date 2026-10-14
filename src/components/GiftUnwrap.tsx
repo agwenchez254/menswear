@@ -110,7 +110,7 @@ export const GiftUnwrap = memo(function GiftUnwrap({ product, wrap, ribbon, mess
   const revealed = stage >= 3;
 
   return (
-    <div className="relative isolate overflow-hidden bg-gradient-to-b from-[#1a1d1a] to-[#0d0f0d] text-white" style={{ minHeight: 480 }}>
+    <div className="tile relative isolate bg-gradient-to-b from-[#1a1d1a] to-[#0d0f0d] text-white" style={{ minHeight: 480 }}>
       {/* light rays */}
       <motion.div
         className="pointer-events-none absolute left-1/2 top-[46%] -z-10 size-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full"
@@ -130,9 +130,9 @@ export const GiftUnwrap = memo(function GiftUnwrap({ product, wrap, ribbon, mess
           <AnimatePresence>
             {product && (
               <motion.div
-                className="absolute bottom-[96px] left-1/2 z-10 h-[220px] w-[190px] -translate-x-1/2"
+                className="absolute bottom-[96px] left-1/2 z-10 h-[190px] w-[150px] -translate-x-1/2"
                 initial={{ y: 60, opacity: 0, scale: 0.7 }}
-                animate={revealed ? { y: -78, opacity: 1, scale: 1.08, rotate: [0, -3, 2, 0] } : lidOpen ? { y: 0, opacity: 0.001, scale: 0.8 } : { y: 60, opacity: 0, scale: 0.7 }}
+                animate={revealed ? { y: -46, opacity: 1, scale: 1.05, rotate: [0, -3, 2, 0] } : lidOpen ? { y: 0, opacity: 0.001, scale: 0.8 } : { y: 60, opacity: 0, scale: 0.7 }}
                 transition={revealed ? { type: "spring", stiffness: 70, damping: 12, rotate: { duration: 2.2, ease: "easeInOut" } } : { duration: 0.2 }}
               >
                 <span className="block h-full w-full border-[6px] border-[#eceee8] bg-[#eceee8] shadow-[0_16px_28px_rgba(0,0,0,0.5)]"><Photo id={product.images[0]} alt={product.name} w={400} eager className="h-full w-full" /></span>

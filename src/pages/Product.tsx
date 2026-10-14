@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "motion/react";
 import { CaretRight, Check, Gift, Package, Ruler, Star, Truck } from "@phosphor-icons/react";
-import { byCategory, byId, formatKES, products } from "../data/products";
+import { byCategory, byId, formatKES, productsFor } from "../data/products";
 import { useCart } from "../store/cart";
 import { Photo } from "../components/Photo";
 import { ProductCard } from "../components/ProductCard";
@@ -36,9 +36,10 @@ export default function Product() {
     );
   }
 
-  const cat = byCategory(product.category);
-  const related = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const cat = byCategory(product.category, product.gender);
+  const related = productsFor(product.gender).filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
   const low = product.stock <= 6;
+  const imgs = product.colorImages?.[color] ?? product.images;
 
   const addToBag = () => {
     if (!size) {
@@ -62,19 +63,18 @@ export default function Product() {
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid gap-2 sm:grid-cols-2">
-          <div className="relative aspect-[4/5] overflow-hidden bg-surface-2 sm:col-span-2 sm:aspect-[5/4]">
-            <Photo id={product.images[0]} alt={product.name} w={1400} eager position="50% 25%" className="h-full w-full" />
+          <div className="tile relative aspect-[4/5] bg-surface-2 sm:col-span-2 sm:aspect-[5/4]">
+            <Photo key={imgs[0]} id={imgs[0]} alt={`${product.name}, ${color}`} w={1400} eager position="50% 25%" className="h-full w-full" />
             {product.isNew && <span className="absolute left-0 top-0 bg-accent px-3 py-1 text-sm font-semibold text-accent-ink">New</span>}
           </div>
-          {product.images.slice(1).map((id, i) => (
-            <div key={id} className={`aspect-square overflow-hidden bg-surface-2 ${product.images.length === 2 ? "sm:col-span-2 sm:aspect-[5/3]" : ""}`}>
+          {imgs.slice(1).map((id, i) => (
+            <div key={id} className={`tile aspect-square bg-surface-2 ${imgs.length === 2 ? "sm:col-span-2 sm:aspect-[5/3]" : ""}`}>
               <Photo id={id} alt={`${product.name}, view ${i + 2}`} w={900} className="h-full w-full" />
             </div>
           ))}
         </motion.div>
 
         <div className="lg:sticky lg:top-32 lg:self-start">
-          <p className="">{cat?.label}</p>
           <h1 className="mt-2 display text-5xl md:text-6xl">{product.name}</h1>
           <p className="mt-3 flex items-center gap-2 text-sm text-muted">
             <Star size={16} weight="fill" className="text-ink" /> {product.rating.toFixed(1)} · {product.sold} sold

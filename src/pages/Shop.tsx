@@ -2,15 +2,14 @@ import { useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "
 import { useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { Funnel, MagnifyingGlass, X } from "@phosphor-icons/react";
-import { categories, formatKES, products } from "../data/products";
+import { categoriesByGender, formatKES, productsFor } from "../data/products";
+import { useGender } from "../store/gender";
 import { ProductCard, ProductCardSkeleton } from "../components/ProductCard";
 
 const MAX = 25000;
 const STEP = 500;
-const SIZES = ["S", "M", "L", "XL", "XXL", "39", "40", "41", "42", "43", "44", "45", "46"];
-const swatches = [
-  ...new Map(products.flatMap((p) => p.colors).map((c) => [c.name, c])).values(),
-];
+const SIZE_ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
+const sizeRank = (s: string) => (SIZE_ORDER.includes(s) ? SIZE_ORDER.indexOf(s) : 100 + Number(s));
 
 const sorts = [
   { v: "best", l: "Best selling" },
@@ -34,6 +33,11 @@ export default function Shop() {
   const [params, setParams] = useSearchParams();
   const [sheet, setSheet] = useState(false);
   const [loading, setLoading] = useState(true);
+  const gender = useGender((st) => st.gender);
+  const pool = useMemo(() => productsFor(gender), [gender]);
+  const catDefs = categoriesByGender[gender];
+  const SIZES = useMemo(() => [...new Set(pool.flatMap((x) => x.sizes))].filter((x) => x !== "One size").sort((a, b) => sizeRank(a) - sizeRank(b)), [pool]);
+  const swatches = useMemo(() => [...new Map(pool.flatMap((x) => x.colors).map((c) => [c.name, c])).values()], [pool]);
 
   const cats = params.get("cat")?.split(",").filter(Boolean) ?? [];
   const sizes = params.get("size")?.split(",").filter(Boolean) ?? [];
@@ -70,7 +74,7 @@ export default function Shop() {
 
   const results = useMemo(() => {
     const term = deferredQ.trim().toLowerCase();
-    const list = products.filter((p) => {
+    const list = pool.filter((p) => {
       if (cats.length && !cats.includes(p.category)) return false;
       if (p.price < min || p.price > max) return false;
       if (sizes.length && !sizes.some((s) => p.sizes.includes(s))) return false;
@@ -87,10 +91,10 @@ export default function Shop() {
       return b.sold - a.sold;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params, deferredQ]);
+  }, [params, deferredQ, pool]);
 
   const chips: { label: string; clear: () => void }[] = [
-    ...cats.map((c) => ({ label: categories.find((x) => x.slug === c)?.label ?? c, clear: () => setList("cat", cats.filter((x) => x !== c)) })),
+    ...cats.map((c) => ({ label: catDefs.find((x) => x.slug === c)?.label ?? c, clear: () => setList("cat", cats.filter((x) => x !== c)) })),
     ...sizes.map((s) => ({ label: `Size ${s}`, clear: () => setList("size", sizes.filter((x) => x !== s)) })),
     ...colors.map((c) => ({ label: c, clear: () => setList("color", colors.filter((x) => x !== c)) })),
     ...(min > 0 || max < MAX ? [{ label: `${formatKES(min)} to ${formatKES(max)}`, clear: () => update({ min: null, max: null }) }] : []),
@@ -125,7 +129,7 @@ export default function Shop() {
               ["8k to 15k", 8000, 15000],
               ["15k+", 15000, MAX],
             ].map(([l, a, b]) => (
-              <button key={l as string} onClick={() => update({ min: a ? String(a) : null, max: b === MAX ? null : String(b) })} className="min-h-9 border border-line px-3 text-xs hover:border-ink">
+              <button key={l as string} onClick={() => update({ min: a ? String(a) : null, max: b === MAX ? null : String(b) })} className="min-h-9 border border-line px-3 text-xs hover:border-ink [border-radius:var(--r-field)]">
                 {l}
               </button>
             ))}
@@ -135,12 +139,12 @@ export default function Shop() {
 
       <Section title="Category">
         <ul className="space-y-1">
-          {categories.map((c) => (
+          {catDefs.map((c) => (
             <li key={c.slug}>
               <label className="flex min-h-10 items-center gap-3 text-sm">
                 <input type="checkbox" className="size-4 accent-[var(--fg)]" checked={cats.includes(c.slug)} onChange={() => setList("cat", toggle(cats, c.slug))} />
                 <span className="flex-1">{c.label}</span>
-                <span className="text-xs text-muted tabular-nums">{products.filter((p) => p.category === c.slug).length}</span>
+                <span className="text-xs text-muted tabular-nums">{pool.filter((p) => p.category === c.slug).length}</span>
               </label>
             </li>
           ))}
@@ -180,7 +184,6 @@ export default function Shop() {
     <div className="mx-auto max-w-[1400px] px-4 pb-10 pt-10 md:px-8 md:pt-14">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="">All products</p>
           <h1 className="mt-2 display text-5xl md:text-6xl">The full collection</h1>
         </div>
         <div className="flex items-center gap-3">
@@ -211,7 +214,7 @@ export default function Shop() {
               {loading ? "Loading..." : `${results.length} ${results.length === 1 ? "product" : "products"}`}
             </p>
             {chips.map((c) => (
-              <button key={c.label} onClick={c.clear} className="inline-flex min-h-9 items-center gap-1.5 bg-ink px-3 text-xs text-on-ink hover:bg-ink-2" aria-label={`Remove filter ${c.label}`}>
+              <button key={c.label} onClick={c.clear} className="inline-flex min-h-9 items-center gap-1.5 bg-ink px-3 text-xs text-on-ink hover:bg-ink-2 [border-radius:var(--r-btn)]" aria-label={`Remove filter ${c.label}`}>
                 {c.label} <X size={12} />
               </button>
             ))}

@@ -72,7 +72,15 @@ export const useCart = create<CartState>()(
       setOpen: (open) => set({ open }),
       setLastOrder: (o) => set({ lastOrder: o }),
     }),
-    { name: "jabali-cart", partialize: (s) => ({ lines: s.lines, lastOrder: s.lastOrder }) },
+    {
+      name: "jabali-cart",
+      partialize: (s) => ({ lines: s.lines, lastOrder: s.lastOrder }),
+      // Drop saved lines whose product no longer exists in the catalogue, so the bag count matches what the bag can show.
+      merge: (saved, current) => {
+        const p = (saved ?? {}) as Partial<CartState>;
+        return { ...current, ...p, lines: (p.lines ?? []).filter((l) => byId(l.productId)) };
+      },
+    },
   ),
 );
 
@@ -80,4 +88,4 @@ export const GIFT_FEE = 350;
 export const unitPrice = (l: CartLine) => (byId(l.productId)?.price ?? 0) + (l.gift ? GIFT_FEE : 0);
 export const lineTotal = (l: CartLine) => unitPrice(l) * l.qty;
 export const cartSubtotal = (lines: CartLine[]) => lines.reduce((sum, l) => sum + lineTotal(l), 0);
-export const cartCount = (lines: CartLine[]) => lines.reduce((sum, l) => sum + l.qty, 0);
+export const cartCount = (lines: CartLine[]) => lines.reduce((sum, l) => sum + (byId(l.productId) ? l.qty : 0), 0);
