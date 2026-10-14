@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { formatKES } from "@/lib/format";
 import { snapshotOf } from "@/lib/snapshot";
+import { colourStock, reconcileSelection, sizeSoldOut } from "@/lib/stock";
 
 export default function ProductPage() {
   const { slug = "" } = useParams();
@@ -34,6 +35,14 @@ export default function ProductPage() {
     window.scrollTo({ top: 0 });
   }, [product?.id]);
 
+  // A live refetch can remove the chosen colour or sell the chosen size out: re-check the selection.
+  useEffect(() => {
+    if (!product) return;
+    const next = reconcileSelection(product, color, size);
+    if (next.color !== color) setColor(next.color);
+    if (next.size !== size) setSize(next.size);
+  }, [product]);
+
   if (!product) {
     if (isError && !isNotFound(error)) return <ErrorState title="We could not load this product" onRetry={() => void refetch()} />;
     if (isError) {
@@ -55,14 +64,13 @@ export default function ProductPage() {
   }
 
   const related = (pool ?? []).filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
-  const forColour = product.variants.filter((v) => v.colourName === null || v.colourName === color);
-  const colourStock = forColour.reduce((n, v) => n + v.available, 0);
-  const sizeSoldOut = (s: string) => forColour.filter((v) => v.size === s).every((v) => !v.inStock);
-  const low = colourStock > 0 && colourStock <= LOW_STOCK_AT;
+  const stock = colourStock(product.variants, color);
+  const soldOut = (s: string) => sizeSoldOut(product.variants, color, s);
+  const low = stock > 0 && stock <= LOW_STOCK_AT;
   const imgs = product.colorImages[color]?.length ? product.colorImages[color] : product.images;
 
   const addToBag = () => {
-    if (!size) {
+    if (!size || soldOut(size)) {
       setNeedSize(true);
       return;
     }
@@ -115,7 +123,7 @@ export default function ProductPage() {
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {product.sizes.map((s) => {
-                const out = sizeSoldOut(s);
+                const out = soldOut(s);
                 return (
                   <button key={s} disabled={out} aria-pressed={size === s} onClick={() => { setSize(s); setNeedSize(false); }} className={`min-h-11 min-w-12 rounded-xl border px-4 text-sm transition disabled:cursor-not-allowed disabled:text-muted disabled:line-through disabled:opacity-50 ${size === s ? "border-ink bg-ink text-on-ink" : "border-line bg-surface hover:border-ink"}`}>
                     {s}
@@ -131,7 +139,7 @@ export default function ProductPage() {
             {guide && <SizeGuide gender={product.gender} />}
           </fieldset>
 
-          {low && <p className="mt-5 text-sm font-medium text-danger">Only {colourStock} left in stock</p>}
+          {low && <p className="mt-5 text-sm font-medium text-danger">Only {stock} left in stock</p>}
           {!product.inStock && <p className="mt-5 text-sm font-medium text-danger">Sold out</p>}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

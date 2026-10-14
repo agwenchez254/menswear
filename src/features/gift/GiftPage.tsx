@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Check, Gift as GiftIcon } from "@phosphor-icons/react";
 import { useGetProductQuery, useGetProductsQuery } from "@/api/catalogue";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { firstAvailableSize, reconcileSelection, sizeSoldOut } from "@/lib/stock";
 import type { Product } from "@/models";
 import { useGender } from "@/store/gender";
 import { GiftUnwrap } from "@/features/gift/components/GiftUnwrap";
@@ -21,11 +23,11 @@ export default function GiftPage() {
   const gender = useGender((st) => st.gender);
   const defaultSlug = gender === "men" ? "oxford-button-down" : "denim-shirt-dress";
 
-  const { currentData: pool = NO_PRODUCTS } = useGetProductsQuery(gender);
+  const { currentData: pool = NO_PRODUCTS, refetch: refetchPool } = useGetProductsQuery(gender);
   const gifts = useMemo(() => pool.filter((p) => p.inStock && (p.category !== "accessories" || p.price >= 1800)), [pool]);
 
   const [slug, setSlug] = useState(params.get("product") ?? defaultSlug);
-  const { data: product, isError } = useGetProductQuery(slug);
+  const { data: product, isError, refetch: refetchProduct } = useGetProductQuery(slug);
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
   const [wrap, setWrap] = useState("burgundy");
@@ -44,9 +46,18 @@ export default function GiftPage() {
   // Choose a colour and size when a different product loads (not on every live refetch of the same one).
   useEffect(() => {
     if (!product) return;
-    setColor(product.colors[0]?.name ?? "");
-    setSize(product.sizes[Math.min(2, product.sizes.length - 1)] ?? "");
+    const first = product.colors[0]?.name ?? "";
+    setColor(first);
+    setSize(firstAvailableSize(product, first));
   }, [product?.id]);
+
+  // A live refetch can remove the chosen colour or sell the chosen size out: re-check the selection.
+  useEffect(() => {
+    if (!product) return;
+    const next = reconcileSelection(product, color, size);
+    if (next.color !== color) setColor(next.color);
+    if (next.size !== size) setSize(next.size);
+  }, [product]);
 
   // When the shop switches between men and women, move to a gift from that side.
   useEffect(() => {
@@ -60,6 +71,10 @@ export default function GiftPage() {
 
   const addGift = () => {
     if (!product) return;
+    if (!size || sizeSoldOut(product.variants, color, size)) {
+      setError("Choose a size that is in stock.");
+      return;
+    }
     if (!to.trim() || !from.trim()) {
       setError("Add the recipient's name and yours so the card is personal.");
       return;
@@ -76,6 +91,17 @@ export default function GiftPage() {
   };
 
   if (!product) {
+    if (isError && gifts.length === 0) {
+      return (
+        <ErrorState
+          title="We could not load gifts"
+          onRetry={() => {
+            void refetchPool();
+            void refetchProduct();
+          }}
+        />
+      );
+    }
     return (
       <div className="mx-auto max-w-[1400px] px-4 pb-10 pt-10 md:px-8 md:pt-14" aria-busy={!isError}>
         <h1 className="mt-2 display text-5xl md:text-7xl">Build a gift worth opening.</h1>
@@ -122,7 +148,7 @@ export default function GiftPage() {
                 <legend className="label">Size</legend>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {product.sizes.map((s) => (
-                    <button key={s} aria-pressed={s === size} onClick={() => setSize(s)} className={`min-h-10 min-w-11 rounded-lg border px-3 text-sm ${s === size ? "border-ink bg-ink text-on-ink" : "border-line bg-surface"}`}>
+                    <button key={s} disabled={sizeSoldOut(product.variants, color, s)} aria-pressed={s === size} onClick={() => setSize(s)} className={`min-h-10 min-w-11 rounded-lg border px-3 text-sm disabled:cursor-not-allowed disabled:text-muted disabled:line-through disabled:opacity-50 ${s === size ? "border-ink bg-ink text-on-ink" : "border-line bg-surface"}`}>
                       {s}
                     </button>
                   ))}
@@ -187,7 +213,7 @@ export default function GiftPage() {
               <div className="flex justify-between border-t border-line pt-3 text-lg font-semibold"><dt>Total</dt><dd>{formatKES(product.price + GIFT_FEE)}</dd></div>
             </dl>
             {error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
-            <button className="btn-accent mt-4 h-14 w-full text-base" onClick={addGift}>
+            <button className="btn-accent mt-4 h-14 w-full text-base disabled:opacity-50" disabled={!product.inStock} onClick={addGift}>
               <GiftIcon size={20} /> Add gift to bag
             </button>
             <p className="mt-3 text-center text-xs text-muted">Wrapping is billed at checkout. <Link to="/shop" className="underline">Keep browsing</Link></p>
