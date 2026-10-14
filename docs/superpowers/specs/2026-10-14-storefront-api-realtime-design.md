@@ -30,21 +30,20 @@ Assumption: "server side" means server-driven content, not server-side rendering
 
 ## 2. Home content mapping (`jabali-be`)
 
-Home content is JSON blocks with conventional keys per gender:
+The backend seed already publishes the home blocks, so no seed or schema change is needed. Keys are `home.<part>.<gender>`:
 
 | Key | Kind | Data |
 |---|---|---|
-| `home.hero` | `hero` | lines[2], sub, cta, imageUrl, alt, pos, featuredSlug |
-| `home.trust` | `rich_text` | items[{icon, title, text}] (icon = name from a fixed set) |
-| `home.titles` | `rich_text` | catTitle, topTitle |
-| `home.gift` | `gift_promo` | productSlug, color, wrap, ribbon, message, from, to |
-| `home.categories` | `category_tiles` | ordered slugs, with per-tile image override |
+| `home.hero.<gender>` | `hero` | lines[2], sub, cta, image, alt, focalPoint, featuredProductSlug |
+| `home.trust.<gender>` | `banner` | items[{icon, title, text}] (icon: phone, package, ruler, hand-coins) |
+| `home.sections.<gender>` | `rich_text` | categoriesTitle, topProductsTitle |
+| `home.gift.<gender>` | `gift_promo` | productSlug, colour, wrap, ribbon, message, from, to |
 
-Testimonials come from the testimonial endpoints (lead = first, others = rest).
+Category tiles come from the `categories` array in the `/store/home` bundle (no block). Testimonials come from the bundle (lead first). Block data is free-form JSON, so the storefront validates each block and hides a section whose block is missing or malformed.
 
-The seed gets these blocks (published) with today's copy so the site is unchanged on day one. No schema migration is needed because existing `ContentKind` values are reused.
+Decision: Tailwind grid placement classes stay in the storefront, keyed by category slug. The CMS controls order, label, tagline and image only. If the category set no longer matches the designed grid, the section falls back to a uniform grid.
 
-Decision: Tailwind grid placement classes stay in the storefront, keyed by category slug. The CMS controls order, label, tagline and image only. A category with no placement entry gets a default tile.
+Changes found during planning (details in the plan): cart lines snapshot their product (name, price, image) because the hardcoded catalogue is removed; `data/delivery.ts` stays for checkout; shop filtering stays client-side over the full product pool; product cards lose the hover second image; no storefront settings endpoint yet.
 
 ## 3. Realtime via SSE (`jabali-be`)
 
@@ -60,7 +59,7 @@ Decision: Tailwind grid placement classes stay in the storefront, keyed by categ
   - unknown entity → no emit
 - Order service stock changes emit `Product, Home` (they already call `cache.invalidate('store:products')`).
 - Cache is cleared before emit so a refetch cannot return stale data. Editing a draft changes no live data; the storefront refetch just returns the same content.
-- Scheduled publish/unpublish is evaluated at read time (`isLive`) with no job. It becomes visible within the 60s cache TTL and does not emit. Accepted limitation.
+- Scheduled publish runs on a 30s timer (`BlocksService.publishDue`) and emits. Scheduled unpublish is evaluated at read time (`isLive`) and shows within the 60s cache TTL without an emit. Accepted limitation.
 - Single API instance only: the `Subject` is per process. Multiple instances would need Redis pub/sub behind the same service interface (not built now).
 
 ## 4. Storefront subscriber
