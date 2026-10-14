@@ -2,7 +2,6 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "motion/react";
 import { CheckCircle, Gift, MapPin, Receipt, WhatsappLogo } from "@phosphor-icons/react";
 import { useCart } from "@/store/cart";
-import { byId } from "@/data/products";
 import { lineTotal } from "@/services/pricing";
 import { formatKES } from "@/lib/format";
 
@@ -49,11 +48,11 @@ export default function OrderConfirmationPage() {
 
       <ul className="mt-8 divide-y divide-line border-y border-line">
         {order.lines.map((l) => {
-          const p = byId(l.productId);
+          const p = l.snapshot;
           return (
             <li key={l.key} className="flex items-center justify-between gap-4 py-4 text-sm">
               <div>
-                <p className="font-medium">{p?.name} <span className="text-muted">x {l.qty}</span></p>
+                <p className="font-medium">{p.name} <span className="text-muted">x {l.qty}</span></p>
                 <p className="text-muted">{l.color} · {l.size}</p>
                 {l.gift && <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-ink"><Gift size={14} /> Gift for {l.gift.to}</p>}
               </div>

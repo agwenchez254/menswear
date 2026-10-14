@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Gift, Minus, Plus, Trash } from "@phosphor-icons/react";
 import type { CartLineItemProps } from "@/models";
-import { byId } from "@/data/products";
 import { productPath } from "@/config/routes";
 import { formatKES } from "@/lib/format";
 import { lineTotal } from "@/services/pricing";
@@ -9,12 +8,11 @@ import { Photo } from "@/components/ui/Photo";
 
 /** One row in the bag drawer: photo, details, quantity stepper and line total. */
 export function CartLineItem({ line, onQty, onRemove, onNavigate }: CartLineItemProps) {
-  const p = byId(line.productId);
-  if (!p) return null;
+  const p = line.snapshot;
   return (
     <li className="flex gap-4 py-5">
-      <Link to={productPath(p.id)} onClick={onNavigate} className="relative size-24 shrink-0 overflow-hidden">
-        <Photo id={p.images[0]} alt={p.name} w={240} className="h-full w-full" />
+      <Link to={productPath(p.slug)} onClick={onNavigate} className="relative size-24 shrink-0 overflow-hidden">
+        <Photo src={p.image} alt={p.name} w={240} className="h-full w-full" />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex justify-between gap-2">

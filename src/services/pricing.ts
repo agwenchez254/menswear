@@ -1,9 +1,8 @@
 import type { CartLine, DeliveryMethod, Zone } from "@/models";
-import { byId } from "@/data/products";
 import { FREE_NAIROBI_DELIVERY_OVER, GIFT_FEE, PROMO } from "@/config/commerce";
 
-/** Price of one unit of a cart line, including the gift-wrap fee when the line is a gift. */
-export const unitPrice = (line: CartLine): number => (byId(line.productId)?.price ?? 0) + (line.gift ? GIFT_FEE : 0);
+/** Price of one unit of a cart line (as captured when it was added), including the gift-wrap fee for gifts. */
+export const unitPrice = (line: CartLine): number => line.snapshot.price + (line.gift ? GIFT_FEE : 0);
 
 export const lineTotal = (line: CartLine): number => unitPrice(line) * line.qty;
 

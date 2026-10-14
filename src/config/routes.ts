@@ -3,14 +3,14 @@ export const ROUTES = {
   home: "/",
   shop: "/shop",
   category: "/category/:slug",
-  product: "/product/:id",
+  product: "/product/:slug",
   gift: "/gift",
   checkout: "/checkout",
   order: "/order/:id",
   notFound: "*",
 } as const;
 
-export const productPath = (id: string): string => `/product/${id}`;
+export const productPath = (slug: string): string => `/product/${slug}`;
 export const orderPath = (id: string): string => `/order/${id}`;
 export const shopPath = (params?: { cat?: string; sort?: string; q?: string }): string => {
   const search = new URLSearchParams();

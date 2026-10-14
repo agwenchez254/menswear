@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartState } from "@/models";
-import { byId } from "@/data/products";
 import { MAX_LINE_QTY } from "@/config/commerce";
 
 export const useCart = create<CartState>()(
@@ -32,10 +31,11 @@ export const useCart = create<CartState>()(
     {
       name: "jabali-cart",
       partialize: (s) => ({ lines: s.lines, lastOrder: s.lastOrder }),
-      // Drop saved lines whose product no longer exists in the catalogue, so the bag count matches what the bag can show.
+      // Bags saved before products came from the API have no snapshot and cannot be shown: drop them.
       merge: (saved, current) => {
         const p = (saved ?? {}) as Partial<CartState>;
-        return { ...current, ...p, lines: (p.lines ?? []).filter((l) => byId(l.productId)) };
+        const lastOrder = p.lastOrder?.lines.every((l) => l.snapshot) ? p.lastOrder : null;
+        return { ...current, ...p, lastOrder, lines: (p.lines ?? []).filter((l) => l.snapshot?.slug) };
       },
     },
   ),

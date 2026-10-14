@@ -3,10 +3,10 @@ import type { CartLine } from "./cart";
 import type { Product } from "./product";
 
 export interface PhotoProps {
-  /** Unsplash photo ID (see data/photos.ts). */
-  id: string;
+  /** Photo URL. Missing or broken URLs show a neutral placeholder. */
+  src: string | null | undefined;
   alt: string;
-  /** Requested width in px. Smaller and larger variants are generated for srcSet. */
+  /** Requested width in px. Smaller and larger variants are generated for srcSet when the host supports it. */
   w?: number;
   className?: string;
   /** Load immediately instead of lazily (use for the hero image). */

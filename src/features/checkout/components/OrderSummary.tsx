@@ -1,5 +1,4 @@
 import type { OrderSummaryProps } from "@/features/checkout/models";
-import { byId } from "@/data/products";
 import { PROMO } from "@/config/commerce";
 import { formatKES } from "@/lib/format";
 import { lineTotal } from "@/services/pricing";
@@ -11,12 +10,11 @@ export function OrderSummary({ lines, subtotal, discount, delivery, total, metho
       <h2 className="display text-2xl">Order summary</h2>
       <ul className="mt-4 divide-y divide-line">
         {lines.map((l) => {
-          const p = byId(l.productId);
-          if (!p) return null;
+          const p = l.snapshot;
           return (
             <li key={l.key} className="flex items-center gap-3 py-3">
               <div className="relative size-14 shrink-0 overflow-hidden">
-                <Photo id={p.images[0]} alt={p.name} w={160} className="h-full w-full" />
+                <Photo src={p.image} alt={p.name} w={160} className="h-full w-full" />
                 <span className="absolute -right-0 -top-0 grid size-5 place-items-center rounded-bl-lg bg-ink text-[11px] text-white">{l.qty}</span>
               </div>
               <div className="min-w-0 flex-1 text-sm">
