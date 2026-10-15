@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { GenderCurtain } from "@/components/layout/GenderCurtain";
 import { useStoreEvents } from "@/hooks/useStoreEvents";
+import { ChatWidget } from "@/features/chat/ChatWidget";
 import { NoticeToasts } from "@/features/notifications/NoticeToasts";
 import { useOrderNotifications } from "@/features/notifications/useOrderNotifications";
 import { unlockAudio } from "@/lib/chime";
@@ -46,6 +47,7 @@ export default function Layout() {
       <CartDrawer />
       <GenderCurtain />
       <NoticeToasts />
+      <ChatWidget />
     </>
   );
 }

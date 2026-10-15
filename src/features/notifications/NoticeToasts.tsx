@@ -22,7 +22,7 @@ export function NoticeToasts() {
   }, [popups, dismiss]);
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-[70] flex w-[min(92vw,22rem)] flex-col gap-2" role="region" aria-label="Order updates" aria-live="polite">
+    <div className="pointer-events-none fixed bottom-24 right-4 z-[70] flex w-[min(92vw,22rem)] flex-col gap-2" role="region" aria-label="Order updates" aria-live="polite">
       <AnimatePresence>
         {shown.map((n) => {
           const Icon = ICON[n.tone];

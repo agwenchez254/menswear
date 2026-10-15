@@ -33,7 +33,8 @@ export function buildCsp({ apiOrigin, scriptHashes, strict }) {
     // Inline style attributes come from motion and CMS focal points; documented exception.
     ["style-src", "'self'", "'unsafe-inline'"],
     ["img-src", "'self'", "data:", "https://images.unsplash.com", apiOrigin],
-    ["font-src", "'self'"],
+    // Vite inlines small woff2 files as data: URIs.
+    ["font-src", "'self'", "data:"],
     ["connect-src", "'self'", apiOrigin],
     ["object-src", "'none'"],
     ["base-uri", "'self'"],
