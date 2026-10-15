@@ -11,9 +11,8 @@
     "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
-    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
-    "@fontsource-variable/outfit": "^5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@phosphor-icons/react": "^2.1.10",
     "@reduxjs/toolkit": "^2.13.0",
     "motion": "^14.2.0",

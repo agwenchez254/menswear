@@ -3,6 +3,7 @@ import { API_URL, baseApi } from "@/api/baseApi";
 import { authApi } from "@/api/auth";
 import { playChime } from "@/lib/chime";
 import { runEventStream } from "@/lib/sse";
+import { signedFetch } from "@/lib/signedFetch";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { noticeFor, parseOrderEvent } from "./messages";
 import { useNotices } from "./store";
@@ -28,6 +29,7 @@ export function useOrderNotifications(): void {
     const ctl = new AbortController();
     void runEventStream({
       url: URL,
+      fetchFn: signedFetch,
       signal: ctl.signal,
       token: () => latest.current,
       // An expired access token: asking for the profile makes the API layer rotate it, and the loop reconnects with the new one.

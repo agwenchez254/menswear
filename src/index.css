@@ -3,8 +3,8 @@
 /*
   Jabali design tokens, two themes.
 
-  Men:   cool off-black and bone, one citron accent, square corners, heavy Bricolage Grotesque.
-  Women: soft plum-ink and mist, one apricot accent, rounded shapes and pill buttons, light Outfit.
+  Men:   cool off-black and bone, one citron accent, square corners, bold Plus Jakarta Sans.
+  Women: soft plum-ink and mist, one apricot accent, rounded shapes and pill buttons, a lighter Plus Jakarta Sans.
 
   Each theme has a light and a dark mode. Light is the default. Dark follows prefers-color-scheme
   or the header toggle ([data-theme]). The gender is set on <html data-gender> before first paint.
@@ -24,10 +24,10 @@
   --success: #17803d;
   --danger: #b3261e;
 
-  --fd: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --dw: 700;
-  --dls: -0.035em;
-  --dlh: 0.95;
+  --fd: "Plus Jakarta Sans Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --dw: 800;
+  --dls: -0.03em;
+  --dlh: 1;
 
   --r-soft: 0px;
   --r-tile: 0px;
@@ -80,10 +80,10 @@
   --success: #17803d;
   --danger: #b3261e;
 
-  --fd: "Outfit Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --dw: 500;
+  --fd: "Plus Jakarta Sans Variable", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --dw: 600;
   --dls: -0.03em;
-  --dlh: 1;
+  --dlh: 1.05;
 
   --r-soft: 14px;
   --r-tile: 26px;

@@ -4,8 +4,8 @@ import { motion, useReducedMotion } from "motion/react";
 import { useGender } from "@/store/gender";
 
 const look = {
-  men: { bg: "#111311", fg: "#c6e24f", font: '"Bricolage Grotesque Variable", sans-serif', weight: 700, label: "Men" },
-  women: { bg: "#f29a76", fg: "#231a22", font: '"Outfit Variable", sans-serif', weight: 500, label: "Women" },
+  men: { bg: "#111311", fg: "#c6e24f", font: '"Plus Jakarta Sans Variable", sans-serif', weight: 800, label: "Men" },
+  women: { bg: "#f29a76", fg: "#231a22", font: '"Plus Jakarta Sans Variable", sans-serif', weight: 600, label: "Women" },
 } as const;
 
 /**

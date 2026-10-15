@@ -12,6 +12,7 @@ export const ROUTES = {
   track: "/track",
   trackOrder: "/track/:id",
   help: "/help/:slug",
+  faq: "/faq",
   account: "/account",
   accountOrder: "/account/orders/:number",
   notFound: "*",

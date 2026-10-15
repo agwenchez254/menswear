@@ -43,6 +43,8 @@ export interface StreamOptions {
   /** The server rejected the token (401). The caller should refresh it; the loop retries afterwards. */
   onUnauthorized?: () => void;
   signal: AbortSignal;
+  /** The request function. Pass the signing one in the app; defaults to plain fetch. */
+  fetchFn?: typeof fetch;
 }
 
 /** Keeps one stream open until `signal` aborts, reconnecting with a growing delay after errors. */
@@ -52,7 +54,7 @@ export async function runEventStream(o: StreamOptions): Promise<void> {
     const token = o.token();
     if (token) {
       try {
-        const res = await fetch(o.url, { headers: { authorization: `Bearer ${token}`, accept: "text/event-stream" }, signal: o.signal });
+        const res = await (o.fetchFn ?? fetch)(o.url, { headers: { authorization: `Bearer ${token}`, accept: "text/event-stream" }, signal: o.signal });
         if (res.status === 401) o.onUnauthorized?.();
         else if (res.ok && res.body) {
           failures = 0;

@@ -37,6 +37,7 @@ export function Footer() {
             <li><Link className="hover:text-ink" to="/help/delivery-and-returns">Delivery and returns</Link></li>
             <li><Link className="hover:text-ink" to="/help/size-guide">Size guide</Link></li>
             <li><Link className="hover:text-ink" to="/help/paying-with-mpesa">Paying with M-Pesa</Link></li>
+            <li><Link className="hover:text-ink" to="/faq">Questions and answers</Link></li>
             <li><Link className="hover:text-ink" to="/track">Track an order</Link></li>
           </ul>
         </nav>

@@ -8,6 +8,7 @@ import { CategoriesSection } from "@/features/home/sections/CategoriesSection";
 import { TopSellingSection } from "@/features/home/sections/TopSellingSection";
 import { GiftTeaserSection } from "@/features/home/sections/GiftTeaserSection";
 import { ReviewsSection } from "@/features/home/sections/ReviewsSection";
+import { FaqSection } from "@/features/faq/FaqSection";
 
 export default function HomePage() {
   const g = useGender((s) => s.gender);
@@ -32,6 +33,7 @@ export default function HomePage() {
       {data.gift && <GiftTeaserSection g={g} c={data.gift} />}
       <DeliverySection />
       <ReviewsSection key={`rev-${g}`} g={g} items={data.testimonials} />
+      <FaqSection />
     </>
   );
 }

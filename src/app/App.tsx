@@ -15,6 +15,7 @@ const OrderDetailPage = lazy(() => import("@/features/account/OrderDetailPage"))
 const OrderConfirmationPage = lazy(() => import("@/features/order/OrderConfirmationPage"));
 const TrackOrderPage = lazy(() => import("@/features/order/TrackOrderPage"));
 const HelpPage = lazy(() => import("@/features/help/HelpPage"));
+const FaqPage = lazy(() => import("@/features/faq/FaqPage"));
 const BlogListPage = lazy(() => import("@/features/blog/BlogListPage"));
 const BlogPostPage = lazy(() => import("@/features/blog/BlogPostPage"));
 const GiftPage = lazy(() => import("@/features/gift/GiftPage"));
@@ -35,6 +36,7 @@ export default function App() {
         <Route path={ROUTES.track} element={<TrackOrderPage />} />
         <Route path={ROUTES.trackOrder} element={<TrackOrderPage />} />
         <Route path={ROUTES.help} element={<HelpPage />} />
+        <Route path={ROUTES.faq} element={<FaqPage />} />
         <Route path={ROUTES.account} element={<RequireCustomer><AccountPage /></RequireCustomer>} />
         <Route path={ROUTES.accountOrder} element={<RequireCustomer><OrderDetailPage /></RequireCustomer>} />
         <Route path={ROUTES.notFound} element={<NotFoundPage />} />

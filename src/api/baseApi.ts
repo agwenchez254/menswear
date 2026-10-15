@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery, type BaseQueryFn, type FetchArgs, type FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
+import { signedFetch } from "@/lib/signedFetch";
 import { needsAuthHeader, shouldRefresh } from "./authFlow";
 import { TAGS } from "./tags";
 import { signedOut, tokensRotated, userUpdated } from "@/store/authSlice";
@@ -10,6 +11,8 @@ const authOf = (api: { getState: () => unknown }): AuthState => (api.getState() 
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: `${API_URL}/store`,
+  // Every request is signed so the API can tell it came from this app and was not altered or replayed.
+  fetchFn: signedFetch,
   // The Authorization header goes only to authenticated endpoints, so public GETs stay simple cross-origin requests.
   prepareHeaders: (headers, { getState, endpoint }) => {
     const token = (getState() as { auth: AuthState }).auth.accessToken;
