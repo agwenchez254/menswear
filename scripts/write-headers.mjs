@@ -10,7 +10,9 @@ if (bad.length) {
 }
 
 const strict = process.env.CONTEXT === "production" || process.env.STRICT_HEADERS === "1";
-const apiUrl = process.env.VITE_API_URL ?? "http://localhost:5000/api/v1";
+const apiUrl =
+  process.env.VITE_API_URL ??
+  "https://fcxmdgkl-5000.eun1.devtunnels.ms/api/v1";
 const dist = process.env.DIST_DIR ?? join(process.cwd(), "dist");
 
 try {
