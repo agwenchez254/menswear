@@ -5,7 +5,7 @@ import { TAGS } from "./tags";
 import { signedOut, tokensRotated, userUpdated } from "@/store/authSlice";
 import type { AuthState, AuthUser } from "@/store/authPersist";
 
-export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:5000/api/v1";
+export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "https://fcxmdgkl-5000.eun1.devtunnels.ms/api/v1";
 
 const authOf = (api: { getState: () => unknown }): AuthState => (api.getState() as { auth: AuthState }).auth;
 
