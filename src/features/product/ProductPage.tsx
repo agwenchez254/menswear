@@ -67,9 +67,12 @@ export default function ProductPage() {
   const stock = colourStock(product.variants, color);
   const soldOut = (s: string) => sizeSoldOut(product.variants, color, s);
   const low = stock > 0 && stock <= LOW_STOCK_AT;
+  // Out when nothing is left at all, or nothing in the colour being looked at.
+  const out = !product.inStock || stock === 0;
   const imgs = product.colorImages[color]?.length ? product.colorImages[color] : product.images;
 
   const addToBag = () => {
+    if (out) return;
     if (!size || soldOut(size)) {
       setNeedSize(true);
       return;
@@ -90,7 +93,7 @@ export default function ProductPage() {
       </nav>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-        <ProductGallery product={product} color={color} images={imgs} />
+        <ProductGallery product={product} color={color} images={imgs} soldOut={out} />
 
         <div className="lg:sticky lg:top-32 lg:self-start">
           <h1 className="mt-2 display text-5xl md:text-6xl">{product.name}</h1>
@@ -140,13 +143,13 @@ export default function ProductPage() {
           </fieldset>
 
           {low && <p className="mt-5 text-sm font-medium text-danger">Only {stock} left in stock</p>}
-          {!product.inStock && <p className="mt-5 text-sm font-medium text-danger">Sold out</p>}
+          {out && <p className="mt-5 text-sm font-medium text-danger">{product.inStock ? `Sold out in ${color}. Try another colour.` : "Sold out"}</p>}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <button className="btn-accent h-14 flex-1 text-base disabled:opacity-50" disabled={!product.inStock} onClick={addToBag}>
-              {added ? (<><Check size={20} weight="bold" /> Added to bag</>) : "Add to bag"}
+            <button className="btn-accent h-14 flex-1 text-base disabled:cursor-not-allowed disabled:opacity-50" disabled={out} onClick={addToBag}>
+              {out ? "Sold out" : added ? (<><Check size={20} weight="bold" /> Added to bag</>) : "Add to bag"}
             </button>
-            <Link to={`/gift?product=${product.slug}`} className="btn-ghost h-14 text-base">
+            <Link to={`/gift?product=${product.slug}`} className={`btn-ghost h-14 text-base ${out ? "pointer-events-none opacity-50" : ""}`} aria-disabled={out} tabIndex={out ? -1 : undefined}>
               <Gift size={20} /> Send as a gift
             </Link>
           </div>

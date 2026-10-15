@@ -37,8 +37,8 @@ test("toProductDetail builds per-colour galleries and variants", () => {
   assert.deepEqual(d.images, ["https://x/shared.jpg"]);
   assert.deepEqual(d.colorImages, { White: ["https://x/white.jpg"] });
   assert.deepEqual(d.variants, [
-    { colourName: "White", size: "S", available: 3, inStock: true },
-    { colourName: null, size: "M", available: 0, inStock: false },
+    { id: "v1", colourName: "White", size: "S", available: 3, inStock: true },
+    { id: "v2", colourName: null, size: "M", available: 0, inStock: false },
   ]);
 });
 
@@ -52,7 +52,7 @@ test("toProductDetail copes with a product that has no images or variants", () =
 test("toCategory, toTestimonial and toZoneInfo rename fields", () => {
   assert.deepEqual(toCategory({ id: "c", gender: "men", slug: "suits", label: "Suits", tagline: null, image: null, productCount: 4 }), { slug: "suits", label: "Suits", tag: "", image: null, count: 4 });
   assert.deepEqual(toTestimonial({ id: "t", name: "A", location: "B", quote: "C", rating: 5, isLead: true, avatar: null }), { id: "t", name: "A", location: "B", quote: "C" });
-  assert.deepEqual(toZoneInfo({ id: "z", code: "nairobi", name: "Nairobi", counties: [], fee: 250, etaDays: 1, eta: "Same day", freeOver: 10000, sortOrder: 0, active: true }), { id: "z", label: "Nairobi", fee: 250, eta: "Same day", freeOver: 10000 });
+  assert.deepEqual(toZoneInfo({ id: "z", code: "nairobi", name: "Nairobi", counties: ["Nairobi"], fee: 250, etaDays: 1, eta: "Same day", freeOver: 10000, sortOrder: 0, active: true }), { id: "z", label: "Nairobi", fee: 250, eta: "Same day", freeOver: 10000, counties: ["Nairobi"] });
 });
 
 const home = (blocks: { key: string; data: unknown }[]) =>

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Check, Gift as GiftIcon } from "@phosphor-icons/react";
+import { useSiteSettings } from "@/api/settings";
 import { useGetProductQuery, useGetProductsQuery } from "@/api/catalogue";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { firstAvailableSize, reconcileSelection, sizeSoldOut } from "@/lib/stock";
+import { colourStock, firstAvailableSize, reconcileSelection, sizeSoldOut } from "@/lib/stock";
 import type { Product } from "@/models";
 import { useGender } from "@/store/gender";
 import { GiftUnwrap } from "@/features/gift/components/GiftUnwrap";
@@ -12,11 +13,11 @@ import { Photo } from "@/components/ui/Photo";
 import { useCart } from "@/store/cart";
 import { formatKES } from "@/lib/format";
 import { snapshotOf } from "@/lib/snapshot";
-import { GIFT_FEE } from "@/config/commerce";
 
 const NO_PRODUCTS: Product[] = [];
 
 export default function GiftPage() {
+  const { giftFee } = useSiteSettings();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const add = useCart((s) => s.add);
@@ -70,7 +71,7 @@ export default function GiftPage() {
   }, [isError, gifts]);
 
   const addGift = () => {
-    if (!product) return;
+    if (!product || !product.inStock || colourStock(product.variants, color) === 0) return;
     if (!size || sizeSoldOut(product.variants, color, size)) {
       setError("Choose a size that is in stock.");
       return;
@@ -209,11 +210,11 @@ export default function GiftPage() {
           <div className="mt-4 rounded-3xl bg-surface p-6 ring-1 ring-ink/15">
             <dl className="space-y-2 text-sm tabular-nums">
               <div className="flex justify-between"><dt className="text-muted">{product.name}</dt><dd>{formatKES(product.price)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted">Gift wrap and card</dt><dd>{formatKES(GIFT_FEE)}</dd></div>
-              <div className="flex justify-between border-t border-line pt-3 text-lg font-semibold"><dt>Total</dt><dd>{formatKES(product.price + GIFT_FEE)}</dd></div>
+              <div className="flex justify-between"><dt className="text-muted">Gift wrap and card</dt><dd>{formatKES(giftFee)}</dd></div>
+              <div className="flex justify-between border-t border-line pt-3 text-lg font-semibold"><dt>Total</dt><dd>{formatKES(product.price + giftFee)}</dd></div>
             </dl>
             {error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
-            <button className="btn-accent mt-4 h-14 w-full text-base disabled:opacity-50" disabled={!product.inStock} onClick={addGift}>
+            <button className="btn-accent mt-4 h-14 w-full text-base disabled:cursor-not-allowed disabled:opacity-50" disabled={!product.inStock || colourStock(product.variants, color) === 0} onClick={addGift}>
               <GiftIcon size={20} /> Add gift to bag
             </button>
             <p className="mt-3 text-center text-xs text-muted">Wrapping is billed at checkout. <Link to="/shop" className="underline">Keep browsing</Link></p>

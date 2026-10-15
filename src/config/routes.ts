@@ -7,11 +7,19 @@ export const ROUTES = {
   gift: "/gift",
   checkout: "/checkout",
   order: "/order/:id",
+  blog: "/blog",
+  blogPost: "/blog/:slug",
+  track: "/track",
+  trackOrder: "/track/:id",
+  help: "/help/:slug",
   account: "/account",
+  accountOrder: "/account/orders/:number",
   notFound: "*",
 } as const;
 
 export const productPath = (slug: string): string => `/product/${slug}`;
+export const blogPostPath = (slug: string): string => `/blog/${slug}`;
+export const accountOrderPath = (number: string): string => `/account/orders/${encodeURIComponent(number)}`;
 export const orderPath = (id: string): string => `/order/${id}`;
 export const shopPath = (params?: { cat?: string; sort?: string; q?: string }): string => {
   const search = new URLSearchParams();

@@ -8,6 +8,7 @@ export const mainNav: Record<Gender, NavItem[]> = {
     { to: "/shop?cat=shoes", label: "Shoes" },
     { to: "/shop?sort=new", label: "New in" },
     { to: "/gift", label: "Gifts" },
+    { to: "/blog", label: "Journal" },
   ],
   women: [
     { to: "/shop", label: "Shop" },
@@ -15,6 +16,7 @@ export const mainNav: Record<Gender, NavItem[]> = {
     { to: "/shop?cat=shoes", label: "Shoes" },
     { to: "/shop?sort=new", label: "New in" },
     { to: "/gift", label: "Gifts" },
+    { to: "/blog", label: "Journal" },
   ],
 };
 

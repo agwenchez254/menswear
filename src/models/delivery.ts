@@ -1,17 +1,6 @@
-export type ZoneId = "nairobi" | "metro" | "regional" | "far";
-
-export interface Zone {
-  id: ZoneId;
-  label: string;
-  /** Delivery fee in Kenya Shillings. */
-  fee: number;
-  eta: string;
-  counties: string[];
-}
-
 export type DeliveryMethod = "delivery" | "pickup";
 
-/** A delivery zone as shown on the home page (from the API). Checkout still uses `Zone`. */
+/** A delivery zone from the API: its fee, ETA and the counties it covers. */
 export interface DeliveryZoneInfo {
   id: string;
   label: string;
@@ -19,4 +8,7 @@ export interface DeliveryZoneInfo {
   eta: string;
   /** Order value above which delivery is free, if the zone has one. */
   freeOver: number | null;
+  counties: string[];
 }
+
+export type Zone = DeliveryZoneInfo;

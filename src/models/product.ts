@@ -32,6 +32,8 @@ export interface Product {
 }
 
 export interface ProductVariant {
+  /** The id the cart and checkout endpoints take. */
+  id: string;
   /** Colour name, or null when the variant is not tied to a colour. */
   colourName: string | null;
   size: string;

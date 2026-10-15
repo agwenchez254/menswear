@@ -1,3 +1,5 @@
+import type { Quote } from "@/api/quote";
+import type { SavedAddress } from "@/api/addresses";
 import type { Icon } from "@phosphor-icons/react";
 import type { CartLine, DeliveryMethod, Zone } from "@/models";
 
@@ -5,8 +7,8 @@ export type CheckoutStep = 1 | 2 | 3;
 
 export type PaymentMethod = "mpesa" | "airtel" | "card" | "cod";
 
-/** "pending" is the wait for the phone prompt; "failed" is reserved for gateway errors. */
-export type CheckoutPhase = "form" | "pending" | "failed";
+/** "placing" is the order being sent; "pending" is the wait for the phone prompt. */
+export type CheckoutPhase = "form" | "placing" | "pending";
 
 export interface ContactForm {
   name: string;
@@ -44,27 +46,44 @@ export interface PendingPaymentProps {
   /** Normalised +254 number the prompt was sent to. */
   phone: string | null;
   method: PaymentMethod;
-  onCancel: () => void;
+  /** Leave the wait and go to the order page, where payment status keeps updating. */
+  onSkip: () => void;
 }
 
 export interface OrderSummaryProps {
   lines: CartLine[];
-  subtotal: number;
-  discount: number;
-  delivery: number;
-  total: number;
+  /** The server price; undefined until it first answers. */
+  quote?: Quote;
+  /** True while a changed bag or destination is being re-priced. */
+  updating: boolean;
+  giftFee: number;
   method: DeliveryMethod;
   /** Whether a destination county has been chosen yet. */
   hasZone: boolean;
   promoInput: string;
-  promoError: string;
-  promoApplied: boolean;
+  /** The code that was sent to the server, if any. */
+  promoSent: string;
   onPromoInput: (value: string) => void;
   onApplyPromo: () => void;
 }
 
 /** Returns an onChange handler for one field of the contact form. */
 export type FieldChangeFactory = (key: keyof ContactForm) => (e: { target: { value: string } }) => void;
+
+/** Saved delivery places and the choice for this order. */
+export interface PlacesProps {
+  saved: SavedAddress[];
+  /** A saved place's id, or "new" for typing a different address. */
+  selected: string;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
+  busy?: boolean;
+  /** Keep the typed address for next time. */
+  save: boolean;
+  onSave: (v: boolean) => void;
+  saveLabel: string;
+  onSaveLabel: (v: string) => void;
+}
 
 export interface DeliveryStepProps {
   method: DeliveryMethod;
@@ -75,9 +94,11 @@ export interface DeliveryStepProps {
   /** Zone for the chosen county, when known. */
   zone?: Zone;
   delivery: number;
+  places: PlacesProps;
 }
 
 export interface PaymentStepProps {
+  options: PayOption[];
   pay: PaymentMethod;
   onPay: (method: PaymentMethod) => void;
   codAllowed: boolean;
@@ -92,7 +113,8 @@ export interface PaymentStepProps {
 export interface ReviewStepProps {
   form: ContactForm;
   method: DeliveryMethod;
-  zone?: Zone;
+  /** Delivery estimate from the server quote. */
+  eta?: string;
   pay: PaymentMethod;
   payPhone: string;
   onEdit: (step: CheckoutStep) => void;

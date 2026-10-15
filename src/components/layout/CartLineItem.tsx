@@ -3,12 +3,14 @@ import { Gift, Minus, Plus, Trash } from "@phosphor-icons/react";
 import type { CartLineItemProps } from "@/models";
 import { productPath } from "@/config/routes";
 import { formatKES } from "@/lib/format";
+import { useSiteSettings } from "@/api/settings";
 import { lineTotal } from "@/services/pricing";
 import { Photo } from "@/components/ui/Photo";
 
 /** One row in the bag drawer: photo, details, quantity stepper and line total. */
 export function CartLineItem({ line, onQty, onRemove, onNavigate }: CartLineItemProps) {
   const p = line.snapshot;
+  const { giftFee } = useSiteSettings();
   return (
     <li className="flex gap-4 py-5">
       <Link to={productPath(p.slug)} onClick={onNavigate} className="relative size-24 shrink-0 overflow-hidden">
@@ -41,7 +43,7 @@ export function CartLineItem({ line, onQty, onRemove, onNavigate }: CartLineItem
               <Plus size={14} />
             </button>
           </div>
-          <p className="font-semibold tabular-nums">{formatKES(lineTotal(line))}</p>
+          <p className="font-semibold tabular-nums">{formatKES(lineTotal(line, giftFee))}</p>
         </div>
       </div>
     </li>

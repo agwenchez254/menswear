@@ -5,6 +5,8 @@ import { needsAuthHeader, shouldRefresh } from "./authFlow.ts";
 test("only authenticated endpoints get an Authorization header", () => {
   assert.equal(needsAuthHeader("getMe"), true);
   assert.equal(needsAuthHeader("updateMe"), true);
+  assert.equal(needsAuthHeader("getMyOrders"), true);
+  assert.equal(needsAuthHeader("getMyOrder"), true);
   assert.equal(needsAuthHeader("getProducts"), false);
   assert.equal(needsAuthHeader("login"), false);
   assert.equal(needsAuthHeader(undefined), false);

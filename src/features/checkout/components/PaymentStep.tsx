@@ -1,15 +1,15 @@
+import { Check } from "@phosphor-icons/react";
 import type { PaymentStepProps } from "@/features/checkout/models";
-import { PAY_OPTIONS } from "@/features/checkout/constants";
 import { formatKES } from "@/lib/format";
 import { Field } from "@/components/ui/Field";
 
 /** Step 2: pick a payment method and enter the details it needs. */
-export function PaymentStep({ pay, onPay, codAllowed, payPhone, onPayPhone, card, onCard, errors, total }: PaymentStepProps) {
+export function PaymentStep({ options, pay, onPay, codAllowed, payPhone, onPayPhone, card, onCard, errors, total }: PaymentStepProps) {
   return (
     <section className="space-y-6" aria-label="Payment method">
       <h2 className="display text-3xl">How would you like to pay?</h2>
       <div className="space-y-3" role="radiogroup" aria-label="Payment method">
-        {PAY_OPTIONS.map((o) => {
+        {options.map((o) => {
           const disabled = o.id === "cod" && !codAllowed;
           return (
             <button
@@ -27,9 +27,11 @@ export function PaymentStep({ pay, onPay, codAllowed, payPhone, onPayPhone, card
                 <span className="block font-medium">
                   {o.label} {o.id === "mpesa" && <span className="ml-1 bg-mpesa/10 px-2 py-0.5 text-xs font-medium text-mpesa">Most popular</span>}
                 </span>
-                <span className="text-sm text-muted">{disabled ? "Only available for Nairobi delivery or studio pickup." : o.hint}</span>
+                <span className="text-sm text-muted">{disabled ? "Not offered for this delivery area." : o.hint}</span>
               </span>
-              <span className={`size-5 border-2 ${pay === o.id ? "border-ink bg-ink ring-2 ring-inset ring-paper" : "border-line"}`} />
+              <span aria-hidden="true" className={`grid size-6 shrink-0 place-items-center rounded-md border-2 transition ${pay === o.id ? "border-ink bg-ink text-on-ink" : "border-line"}`}>
+                {pay === o.id && <Check size={16} weight="bold" />}
+              </span>
             </button>
           );
         })}

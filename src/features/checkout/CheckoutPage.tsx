@@ -2,22 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft } from "@phosphor-icons/react";
-import type { DeliveryMethod } from "@/models";
+import type { DeliveryMethod, Order } from "@/models";
 import type { CardForm, CheckoutPhase, CheckoutStep, ContactForm, FormErrors, PaymentMethod } from "@/features/checkout/models";
 import { useCart } from "@/store/cart";
 import { useAppSelector } from "@/store/hooks";
-import { zoneFor } from "@/data/delivery";
-import { PROMO } from "@/config/commerce";
 import { orderPath, ROUTES } from "@/config/routes";
+import { errorMessage } from "@/api/baseApi";
+import { useGetZonesQuery } from "@/api/delivery";
+import { useCartQuote } from "@/api/quote";
+import { useLazyGetOrderStatusQuery, usePlaceOrderMutation, type PlaceOrderInput } from "@/api/orders";
+import { useSiteSettings } from "@/api/settings";
+import { useCreateAddressMutation, useDeleteAddressMutation, useGetAddressesQuery } from "@/api/addresses";
 import { formatKES } from "@/lib/format";
 import { normalizePhone } from "@/lib/phone";
-import { cartSubtotal, deliveryFee, isCodAllowed, orderTotal, promoDiscount } from "@/services/pricing";
-import { createOrder } from "@/services/order";
-import { CHECKOUT_STEPS, EMPTY_CONTACT, MOBILE_PAYMENT_WAIT_MS, PAY_OPTIONS } from "@/features/checkout/constants";
+import { CHECKOUT_STEPS, EMPTY_CONTACT, MOBILE_PAYMENT_WAIT_MS, PAY_OPTIONS, PAYMENT_POLL_MS } from "@/features/checkout/constants";
 import { isValid, validateContact, validatePayment } from "@/features/checkout/validation";
 import { OrderSummary } from "@/features/checkout/components/OrderSummary";
 import { StepIndicator } from "@/features/checkout/components/StepIndicator";
 import { PendingPayment } from "@/features/checkout/components/PendingPayment";
+import { NEW_ADDRESS } from "@/features/checkout/components/SavedAddresses";
 import { DeliveryStep } from "@/features/checkout/components/DeliveryStep";
 import { PaymentStep } from "@/features/checkout/components/PaymentStep";
 import { ReviewStep } from "@/features/checkout/components/ReviewStep";
@@ -25,6 +28,7 @@ import { ReviewStep } from "@/features/checkout/components/ReviewStep";
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { lines, clear, setLastOrder } = useCart();
+  const placed = useRef<{ sig: string; key: string }>(undefined);
   const [step, setStep] = useState<CheckoutStep>(1);
   const [method, setMethod] = useState<DeliveryMethod>("delivery");
   const account = useAppSelector((s) => s.auth.user);
@@ -34,13 +38,23 @@ export default function CheckoutPage() {
     phone: account?.phone ?? "",
     email: account?.email ?? "",
   }));
+  const { paymentMethods, giftFee } = useSiteSettings();
+  const { data: zones = [] } = useGetZonesQuery();
+  const [placeOrderCall] = usePlaceOrderMutation();
+  const [fetchStatus] = useLazyGetOrderStatusQuery();
+  const [submitError, setSubmitError] = useState("");
+  const { data: saved = [] } = useGetAddressesQuery();
+  const [createAddress] = useCreateAddressMutation();
+  const [deleteAddress, { isLoading: deleting }] = useDeleteAddressMutation();
+  const [placeId, setPlaceId] = useState<string | null>(null); // null until the saved places have loaded
+  const [savePlace, setSavePlace] = useState(false);
+  const [placeLabel, setPlaceLabel] = useState("");
   const [pay, setPay] = useState<PaymentMethod>("mpesa");
   const [payPhone, setPayPhone] = useState("");
   const [card, setCard] = useState<CardForm>({ number: "", exp: "", cvc: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [promoInput, setPromoInput] = useState("");
-  const [promo, setPromo] = useState(false);
-  const [promoErr, setPromoErr] = useState("");
+  const [promoSent, setPromoSent] = useState("");
   const [phase, setPhase] = useState<CheckoutPhase>("form");
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -49,17 +63,43 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0 });
   }, [step, phase]);
 
-  const subtotal = cartSubtotal(lines);
-  const zone = zoneFor(form.county);
-  const discount = promoDiscount(subtotal, promo);
-  const delivery = deliveryFee(method, zone, subtotal);
-  const total = orderTotal(subtotal, discount, delivery);
-  const codAllowed = isCodAllowed(method, zone);
+  const zone = zones.find((z) => z.counties.includes(form.county));
+  const { quote, request, updating, unavailable } = useCartQuote({ lines, method, county: form.county || undefined, promoCode: promoSent || undefined, phone: account?.phone });
+  const delivery = method === "pickup" ? 0 : (quote?.deliveryFee ?? zone?.fee ?? 0);
+  const total = quote?.total ?? 0;
+  const codAllowed = quote?.codAllowed ?? method === "pickup";
+  const promoValid = !!quote?.promo?.valid;
+  const stockProblems = quote?.warnings ?? [];
+  const blocked = !quote || unavailable.length > 0 || stockProblems.length > 0 || (method === "delivery" && quote.deliveryPending);
   const set = (k: keyof ContactForm) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  const options = PAY_OPTIONS.filter((o) => paymentMethods.includes(o.id));
   useEffect(() => {
-    if (pay === "cod" && !codAllowed) setPay("mpesa");
-  }, [codAllowed, pay]);
+    // Keep the selection on an enabled method (settings may change, or COD may not apply to this order).
+    const usable = options.filter((o) => o.id !== "cod" || codAllowed);
+    if (usable.length && !usable.some((o) => o.id === pay)) setPay(usable[0].id);
+  }, [codAllowed, pay, paymentMethods]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const choosePlace = (id: string) => {
+    setPlaceId(id);
+    const a = saved.find((x) => x.id === id);
+    if (!a) {
+      setForm((f) => ({ ...f, county: "", area: "", street: "" }));
+      return;
+    }
+    // The place decides the destination (and so the delivery fee); a recipient and phone override the account's.
+    setForm((f) => ({ ...f, county: a.county, area: a.area, street: a.street, name: a.recipient || account?.name || f.name, phone: a.phone || account?.phone || f.phone }));
+  };
+
+  useEffect(() => {
+    // Start on the default place once they load; if the chosen one was removed, fall back.
+    if (!saved.length) {
+      if (placeId && placeId !== NEW_ADDRESS) setPlaceId(null);
+      return;
+    }
+    if (placeId === NEW_ADDRESS || (placeId && saved.some((a) => a.id === placeId))) return;
+    choosePlace((saved.find((a) => a.isDefault) ?? saved[0]).id);
+  }, [saved]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!payPhone && form.phone) setPayPhone(form.phone);
@@ -77,10 +117,25 @@ export default function CheckoutPage() {
     );
   }
 
+  const typingNew = method === "delivery" && (!saved.length || placeId === NEW_ADDRESS || placeId === null);
+
   const validateStep1 = (): boolean => {
     const e = validateContact(form, method);
+    if (typingNew && savePlace && !placeLabel.trim()) e.saveLabel = "Give this address a name, like Home.";
     setErrors(e);
     return isValid(e);
+  };
+
+  /** Keeps a newly typed address for next time. Failing to save never blocks the order. */
+  const rememberPlace = async () => {
+    if (!typingNew || !savePlace) return;
+    try {
+      const a = await createAddress({ label: placeLabel.trim(), county: form.county, area: form.area.trim(), street: form.street.trim() }).unwrap();
+      setPlaceId(a.id);
+      setSavePlace(false);
+    } catch {
+      /* the order can still go ahead */
+    }
   };
 
   const validateStep2 = (): boolean => {
@@ -90,44 +145,68 @@ export default function CheckoutPage() {
   };
 
   const next = () => {
-    if (step === 1 && validateStep1()) setStep(2);
+    if (step === 1 && validateStep1()) {
+      void rememberPlace();
+      setStep(2);
+    }
     else if (step === 2 && validateStep2()) setStep(3);
   };
 
-  const applyPromo = () => {
-    if (promoInput.trim().toUpperCase() === PROMO.code) {
-      setPromo(true);
-      setPromoErr("");
-    } else setPromoErr("That code is not valid.");
+  const applyPromo = () => setPromoSent(promoInput.trim().toUpperCase());
+
+  /** One key per distinct order, so a retry of the same checkout returns the order already placed. */
+  const keyFor = (sig: string): string => {
+    if (placed.current?.sig !== sig) placed.current = { sig, key: crypto.randomUUID() };
+    return placed.current.key;
   };
 
-  const placeOrder = () => {
-    if (pay === "mpesa" || pay === "airtel") {
-      setPhase("pending");
-      // Simulated gateway callback. Replace with a poll against your payments API.
-      timer.current = setTimeout(() => finish(), MOBILE_PAYMENT_WAIT_MS);
-    } else finish();
-  };
-
-  const finish = () => {
-    const order = createOrder({
-      lines,
-      subtotal,
-      delivery,
-      discount,
-      total,
-      deliveryMethod: method,
-      area: form.area,
-      county: form.county,
-      street: form.street,
-      paymentLabel: PAY_OPTIONS.find((o) => o.id === pay)!.label,
-      name: form.name,
-      phone: form.phone,
-      zoneEta: zone?.eta,
-    });
+  const goToOrder = (order: Order) => {
     setLastOrder(order);
     clear();
     navigate(orderPath(order.id));
+  };
+
+  /** Asks the server whether the mobile-money payment has gone through; moves on when it has, fails, or time runs out. */
+  const watchPayment = (order: Order, until: number) => {
+    timer.current = setTimeout(async () => {
+      const r = await fetchStatus({ number: order.id, phone: order.phone }).unwrap().catch(() => null);
+      if (r && r.paymentStatus !== "pending") return goToOrder({ ...order, paymentStatus: r.paymentStatus });
+      if (Date.now() > until) return goToOrder(order);
+      watchPayment(order, until);
+    }, PAYMENT_POLL_MS);
+  };
+
+  const placeOrder = async () => {
+    if (blocked) return;
+    setSubmitError("");
+    setPhase("placing");
+    const mobile = pay === "mpesa" || pay === "airtel";
+    const input: Omit<PlaceOrderInput, "idempotencyKey"> = {
+      lines: request.lines,
+      method,
+      paymentMethod: pay,
+      ...(method === "delivery" && { county: form.county, address: `${form.street.trim()}, ${form.area.trim()}` }),
+      ...(promoValid && { promoCode: promoSent }),
+      ...(form.notes.trim() && { notes: form.notes.trim().slice(0, 500) }),
+      contactName: form.name.trim(),
+      contactPhone: normalizePhone(form.phone) ?? form.phone,
+      ...(mobile && { payerPhone: normalizePhone(payPhone) ?? payPhone }),
+    };
+    try {
+      const res = await placeOrderCall({ ...input, idempotencyKey: keyFor(JSON.stringify(input)) }).unwrap();
+      if (mobile && res.order.paymentStatus === "pending") {
+        setLastOrder(res.order);
+        clear();
+        setPhase("pending");
+        watchPayment(res.order, Date.now() + MOBILE_PAYMENT_WAIT_MS);
+      } else goToOrder(res.order);
+    } catch (err) {
+      const code = (err as { data?: { code?: string } }).data?.code;
+      if (code === "idempotency_key_conflict") placed.current = undefined;
+      if (code === "invalid_promo") setPromoSent("");
+      setSubmitError(errorMessage(err));
+      setPhase("form");
+    }
   };
 
   const steps = CHECKOUT_STEPS;
@@ -150,20 +229,51 @@ export default function CheckoutPage() {
                 total={total}
                 phone={normalizePhone(payPhone)}
                 method={pay}
-                onCancel={() => {
+                onSkip={() => {
                   clearTimeout(timer.current);
-                  setPhase("form");
+                  const order = useCart.getState().lastOrder;
+                  if (order) navigate(orderPath(order.id));
                 }}
               />
             ) : (
               <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
                 {step === 1 && (
-                  <DeliveryStep method={method} onMethod={setMethod} form={form} onField={set} errors={errors} zone={zone} delivery={delivery} />
+                  <DeliveryStep method={method} onMethod={setMethod} form={form} onField={set}
+                    errors={errors}
+                    zone={zone}
+                    delivery={delivery}
+                    places={{
+                      saved,
+                      selected: placeId ?? NEW_ADDRESS,
+                      onSelect: choosePlace,
+                      onDelete: (id) => void deleteAddress(id),
+                      busy: deleting,
+                      save: savePlace,
+                      onSave: setSavePlace,
+                      saveLabel: placeLabel,
+                      onSaveLabel: setPlaceLabel,
+                    }}
+                  />
                 )}
                 {step === 2 && (
-                  <PaymentStep pay={pay} onPay={setPay} codAllowed={codAllowed} payPhone={payPhone} onPayPhone={setPayPhone} card={card} onCard={setCard} errors={errors} total={total} />
+                  <PaymentStep options={options} pay={pay} onPay={setPay} codAllowed={codAllowed} payPhone={payPhone} onPayPhone={setPayPhone} card={card} onCard={setCard} errors={errors} total={total} />
                 )}
-                {step === 3 && <ReviewStep form={form} method={method} zone={zone} pay={pay} payPhone={payPhone} onEdit={setStep} onField={set} />}
+                {step === 3 && <ReviewStep form={form} method={method} eta={quote?.delivery?.eta} pay={pay} payPhone={payPhone} onEdit={setStep} onField={set} />}
+
+                {(stockProblems.length > 0 || unavailable.length > 0 || submitError) && (
+                  <div role="alert" className="mt-6 space-y-1 rounded-xl bg-danger/10 p-4 text-sm text-danger">
+                    {stockProblems.map((w) => (
+                      <p key={w.variantId}>{w.message}</p>
+                    ))}
+                    {unavailable.map((l) => (
+                      <p key={l.key}>
+                        {l.snapshot.name} ({l.color}, {l.size}) is no longer available.
+                      </p>
+                    ))}
+                    {(stockProblems.length > 0 || unavailable.length > 0) && <p>Update your bag to continue.</p>}
+                    {submitError && <p>{submitError}</p>}
+                  </div>
+                )}
 
                 <div className="mt-10 flex items-center justify-between gap-3">
                   {step > 1 ? (
@@ -178,8 +288,8 @@ export default function CheckoutPage() {
                       Continue
                     </button>
                   ) : (
-                    <button className="btn-accent h-14 px-10 text-base" onClick={placeOrder}>
-                      {pay === "cod" ? "Place order" : `Pay ${formatKES(total)}`}
+                    <button className="btn-accent h-14 px-10 text-base disabled:opacity-60" onClick={placeOrder} disabled={blocked || phase === "placing"}>
+                      {phase === "placing" ? "Placing order..." : pay === "cod" ? "Place order" : `Pay ${formatKES(total)}`}
                     </button>
                   )}
                 </div>
@@ -189,20 +299,20 @@ export default function CheckoutPage() {
         </div>
 
         <aside className="lg:sticky lg:top-32 lg:self-start">
-          <OrderSummary
-            lines={lines}
-            subtotal={subtotal}
-            discount={discount}
-            delivery={delivery}
-            total={total}
-            method={method}
-            hasZone={!!zone}
-            promoInput={promoInput}
-            promoError={promoErr}
-            promoApplied={promo}
-            onPromoInput={setPromoInput}
-            onApplyPromo={applyPromo}
-          />
+          {phase !== "pending" && (
+            <OrderSummary
+              lines={lines}
+              quote={quote}
+              updating={updating}
+              giftFee={giftFee}
+              method={method}
+              hasZone={!!zone}
+              promoInput={promoInput}
+              promoSent={promoSent}
+              onPromoInput={setPromoInput}
+              onApplyPromo={applyPromo}
+            />
+          )}
         </aside>
       </div>
     </div>

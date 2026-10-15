@@ -28,6 +28,7 @@ export const toProductDetail = (d: ApiProductDetail): ProductDetail => {
     images: d.images.map((i) => i.url),
     colorImages: Object.fromEntries(d.colours.map((c) => [c.name, c.images.map((i) => i.url)])),
     variants: d.variants.map((v) => ({
+      id: v.id,
       colourName: v.colourId ? (colourName.get(v.colourId) ?? null) : null,
       size: v.size,
       available: v.available,
@@ -40,7 +41,7 @@ export const toCategory = (c: ApiCategory): CategoryDef => ({ slug: c.slug, labe
 
 export const toTestimonial = (t: ApiTestimonial): Testimonial => ({ id: t.id, name: t.name, location: t.location, quote: t.quote });
 
-export const toZoneInfo = (z: ApiZone): DeliveryZoneInfo => ({ id: z.id, label: z.name, fee: z.fee, eta: z.eta, freeOver: z.freeOver });
+export const toZoneInfo = (z: ApiZone): DeliveryZoneInfo => ({ id: z.id, label: z.name, fee: z.fee, eta: z.eta, freeOver: z.freeOver, counties: z.counties });
 
 // ---- home blocks are free-form JSON edited in the dashboard: validate before trusting them.
 

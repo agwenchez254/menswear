@@ -14,7 +14,12 @@ export function ProductCard({ product }: ProductCardProps) {
     <div className="group relative">
       <Link to={productPath(product.slug)} aria-label={`${product.name}, ${formatKES(product.price)}`} className="block">
         <div className="tile relative aspect-[4/5] bg-surface-2">
-          <Photo src={product.image} alt={product.name} w={640} className="absolute inset-0 transition-transform duration-300 group-hover:scale-[1.03]" />
+          <Photo src={product.image} alt={product.name} w={640} className={`absolute inset-0 transition duration-300 ${product.inStock ? "group-hover:scale-[1.03]" : "blur-[3px] grayscale opacity-60"}`} />
+          {!product.inStock && (
+            <span className="absolute inset-0 grid place-items-center">
+              <span className="bg-paper/90 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-ink">Sold out</span>
+            </span>
+          )}
           <div className="absolute left-0 top-0 flex flex-col items-start">
             {!product.inStock && <span className="bg-surface px-2.5 py-1 text-xs font-semibold text-muted">Sold out</span>}
             {product.bestseller && <span className="bg-ink px-2.5 py-1 text-xs font-semibold text-on-ink">Bestseller</span>}

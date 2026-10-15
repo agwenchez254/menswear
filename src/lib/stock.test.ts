@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { colourStock, firstAvailableSize, reconcileSelection, sizeSoldOut } from "./stock.ts";
 
-const v = (colourName: string | null, size: string, available: number) => ({ colourName, size, available, inStock: available > 0 });
+const v = (colourName: string | null, size: string, available: number) => ({ id: `${colourName}-${size}`, colourName, size, available, inStock: available > 0 });
 const product = (variants: ReturnType<typeof v>[], colors = ["Blue", "Red"], sizes = ["S", "M", "L"]) => ({
   colors: colors.map((name) => ({ name })),
   sizes,

@@ -1,13 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { WarningCircle } from "@phosphor-icons/react";
 import { errorMessage } from "@/api/baseApi";
-import { useLoginMutation, useRegisterMutation } from "@/api/auth";
+import { useLoginMutation, useRegisterMutation, useResendCodeMutation, type VerificationStarted } from "@/api/auth";
+import { VerifyEmailModal } from "@/features/auth/VerifyEmailModal";
+import { apiErrorCode } from "@/lib/otp";
 import { Field } from "@/components/ui/Field";
 import { normalizePhone } from "@/lib/phone";
 import { validatePassword } from "@/lib/password";
 
 type Mode = "signin" | "signup";
 type Errors = Record<string, string>;
+type Pending = VerificationStarted & { password: string };
 
 interface AuthPanelProps {
   title?: string;
@@ -25,6 +28,8 @@ export function AuthPanel({ title = "Sign in to continue", onDone }: AuthPanelPr
   const [formError, setFormError] = useState("");
   const [login, { isLoading: signingIn }] = useLoginMutation();
   const [register, { isLoading: registering }] = useRegisterMutation();
+  const [resend] = useResendCodeMutation();
+  const [pending, setPending] = useState<Pending | null>(null);
   const busy = signingIn || registering;
 
   const validate = (): Errors => {
@@ -46,11 +51,21 @@ export function AuthPanel({ title = "Sign in to continue", onDone }: AuthPanelPr
     setErrors(found);
     if (Object.keys(found).length) return;
     try {
-      if (mode === "signin") await login({ email: email.trim(), password }).unwrap();
-      else await register({ name: name.trim(), email: email.trim(), phone: phone.trim(), password }).unwrap();
-      setPassword("");
-      onDone?.();
+      if (mode === "signin") {
+        await login({ email: email.trim(), password }).unwrap();
+        setPassword("");
+        onDone?.();
+      } else {
+        const started = await register({ name: name.trim(), email: email.trim(), phone: phone.trim(), password }).unwrap();
+        setPending({ ...started, password });
+      }
     } catch (err) {
+      if (apiErrorCode(err) === "email_not_verified") {
+        // The password was right but the account is still waiting for its code: send a fresh one and ask for it.
+        const sent = await resend({ email: email.trim() }).unwrap().catch(() => null);
+        setPending({ email: email.trim().toLowerCase(), password, expiresInSeconds: 600, resendAfterSeconds: sent?.resendAfterSeconds ?? 0 });
+        return;
+      }
       setFormError(errorMessage(err));
     }
   };
@@ -114,6 +129,20 @@ export function AuthPanel({ title = "Sign in to continue", onDone }: AuthPanelPr
           {busy ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
         </button>
       </form>
+      {pending && (
+        <VerifyEmailModal
+          email={pending.email}
+          password={pending.password}
+          expiresInSeconds={pending.expiresInSeconds}
+          resendAfterSeconds={pending.resendAfterSeconds}
+          onClose={() => setPending(null)}
+          onVerified={() => {
+            setPending(null);
+            setPassword("");
+            onDone?.();
+          }}
+        />
+      )}
     </section>
   );
 }

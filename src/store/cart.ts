@@ -31,10 +31,10 @@ export const useCart = create<CartState>()(
     {
       name: "jabali-cart",
       partialize: (s) => ({ lines: s.lines, lastOrder: s.lastOrder }),
-      // Bags saved before products came from the API have no snapshot and cannot be shown: drop them.
+      // Bags saved before products came from the API have no snapshot and cannot be shown: drop them (and orders in the old shape).
       merge: (saved, current) => {
         const p = (saved ?? {}) as Partial<CartState>;
-        const lastOrder = p.lastOrder?.lines.every((l) => l.snapshot) ? p.lastOrder : null;
+        const lastOrder = p.lastOrder && "paymentStatus" in p.lastOrder ? p.lastOrder : null;
         return { ...current, ...p, lastOrder, lines: (p.lines ?? []).filter((l) => l.snapshot?.slug) };
       },
     },

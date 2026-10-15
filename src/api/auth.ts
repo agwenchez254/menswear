@@ -17,18 +17,41 @@ export interface RegisterInput {
   password: string;
 }
 
+/** What sign-up returns: what the verification step needs, no tokens. */
+export interface VerificationStarted {
+  email: string;
+  expiresInSeconds: number;
+  resendAfterSeconds: number;
+}
+
+export interface VerifyInput {
+  email: string;
+  code: string;
+  /** The password chosen at sign-up; activation needs it as well as the code. */
+  password: string;
+}
+
 export const authApi = baseApi.injectEndpoints({
   endpoints: (b) => ({
-    register: b.mutation<AuthResponse, RegisterInput>({
+    /** Creates a pending account and emails a code. No session until `verify` succeeds. */
+    register: b.mutation<VerificationStarted, RegisterInput>({
       query: (body) => ({ url: "/auth/register", method: "POST", body }),
+    }),
+    /** Confirms the emailed code (and the sign-up password) and starts the session. */
+    verifyEmail: b.mutation<AuthResponse, VerifyInput>({
+      query: (body) => ({ url: "/auth/verify", method: "POST", body }),
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
           dispatch(sessionStarted({ user: data.customer, accessToken: data.accessToken, refreshToken: data.refreshToken }));
         } catch {
-          /* the error is shown by the form */
+          /* the modal shows the error */
         }
       },
+    }),
+    /** Always succeeds with the same body, whatever the email. */
+    resendCode: b.mutation<{ resendAfterSeconds: number }, { email: string }>({
+      query: (body) => ({ url: "/auth/resend", method: "POST", body }),
     }),
     login: b.mutation<AuthResponse, { email: string; password: string }>({
       query: (body) => ({ url: "/auth/login", method: "POST", body }),
@@ -73,4 +96,4 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useLogoutMutation, useGetMeQuery, useUpdateMeMutation } = authApi;
+export const { useRegisterMutation, useVerifyEmailMutation, useResendCodeMutation, useLoginMutation, useLogoutMutation, useGetMeQuery, useUpdateMeMutation } = authApi;

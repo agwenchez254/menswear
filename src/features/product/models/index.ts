@@ -19,6 +19,8 @@ export interface SizeGuideProps {
 }
 
 export interface ProductGalleryProps {
+  /** Blurs the photos and labels the product as sold out. */
+  soldOut?: boolean;
   product: ProductDetail;
   /** Selected colour name, used in alt text. */
   color: string;

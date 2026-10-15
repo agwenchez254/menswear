@@ -4,13 +4,18 @@ import { AnimatePresence, motion } from "motion/react";
 import { ShoppingBag, X } from "@phosphor-icons/react";
 import { useCart } from "@/store/cart";
 import { CartLineItem } from "@/components/layout/CartLineItem";
+import { useCartQuote } from "@/api/quote";
+import { useSiteSettings } from "@/api/settings";
 import { cartSubtotal } from "@/services/pricing";
 import { formatKES } from "@/lib/format";
 import { ROUTES } from "@/config/routes";
 
 export function CartDrawer() {
   const { lines, open, setOpen, setQty, remove } = useCart();
-  const subtotal = cartSubtotal(lines);
+  const { giftFee } = useSiteSettings();
+  // Priced by the server when it answers; the estimate covers the moment before that.
+  const { quote } = useCartQuote({ lines: open ? lines : [], method: "pickup" });
+  const subtotal = quote?.subtotal ?? cartSubtotal(lines, giftFee);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);

@@ -319,3 +319,51 @@ input[type="range"].range::-moz-range-thumb {
   border: 3px solid var(--bg);
   box-shadow: 0 0 0 1px var(--fg);
 }
+
+/* Printing a receipt: show only the receipt, black on white, with sensible page margins. */
+@page {
+  margin: 12mm;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border-radius: 0;
+    background: #fff;
+    color: #000;
+    padding: 0;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+  }
+  .print-area * {
+    color: #000 !important;
+  }
+}
+
+/* The logo comes in a light and a dark version. Show the one for the current theme (same rules as the colour tokens). */
+.logo-dark {
+  display: none;
+}
+:root[data-theme="dark"] .logo-light {
+  display: none;
+}
+:root[data-theme="dark"] .logo-dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .logo-dark {
+    display: block;
+  }
+}

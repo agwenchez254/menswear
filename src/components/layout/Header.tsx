@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { Gift, List, MagnifyingGlass, Moon, ShoppingBag, Sun, User, X } from "@phosphor-icons/react";
+import { useSiteSettings } from "@/api/settings";
 import { useCart } from "@/store/cart";
 import { useGender } from "@/store/gender";
 import { useAppSelector } from "@/store/hooks";
@@ -10,6 +11,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { cartCount } from "@/services/pricing";
 import { mainNav } from "@/config/navigation";
 import { Logo } from "@/components/layout/Logo";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { GenderToggle } from "@/components/layout/GenderToggle";
 
 export function Header() {
@@ -19,6 +21,7 @@ export function Header() {
   const gender = useGender((s) => s.gender);
   const customer = useAppSelector((s) => s.auth.user);
   const { dark, toggle } = useTheme();
+  const { whatsappDisplay } = useSiteSettings();
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState(false);
   const [q, setQ] = useState("");
@@ -94,6 +97,7 @@ export function Header() {
           <Link to="/gift" className="hidden size-11 place-items-center hover:bg-ink/5 lg:grid" aria-label="Gifts">
             <Gift size={22} />
           </Link>
+          <NotificationBell />
           <Link to="/account" className="grid size-11 place-items-center hover:bg-ink/5" aria-label={customer ? `Your account, ${customer.name}` : "Sign in"}>
             <User size={22} weight={customer ? "fill" : "regular"} />
           </Link>
@@ -149,7 +153,7 @@ export function Header() {
                 <button onClick={toggle} className="btn-ghost mt-6 self-start">
                   {dark ? <Sun size={18} /> : <Moon size={18} />} {dark ? "Light theme" : "Dark theme"}
                 </button>
-                <p className="mt-auto pt-8 text-sm text-muted">WhatsApp us on +254 712 480 316</p>
+                <p className="mt-auto pt-8 text-sm text-muted">WhatsApp us on {whatsappDisplay}</p>
               </motion.aside>
             </>
           )}
